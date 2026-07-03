@@ -1,0 +1,14 @@
+/* ============================================================
+   3D Detail screen — root overlay container.
+   Rendered over the persistent 3D canvas; pointer events pass
+   through to the canvas except on the chrome (which re-enables
+   pointer-events itself). Chrome/panel styling lives in the
+   respective sub-components.
+   ============================================================ */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}

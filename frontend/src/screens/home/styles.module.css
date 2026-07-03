@@ -1,0 +1,113 @@
+/* ============================================================
+   Fleet (Home) screen — layout & decorative background layers.
+   Only static, screen-level styles live here; per-rack colours
+   stay inline in the components (they are data-driven).
+   ============================================================ */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow-y: auto;
+  background: #06090b;
+}
+
+/* Decorative navy background layers (z 0, non-interactive) */
+.bgGlow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(120% 90% at 80% -10%, rgba(31, 90, 138, 0.16), transparent 55%),
+    radial-gradient(90% 80% at 10% 110%, rgba(31, 90, 138, 0.1), transparent 50%);
+}
+
+.bgGrid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  background-image:
+    linear-gradient(#0c1a2200 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 40, 52, 0.35) 1px, transparent 1px),
+    linear-gradient(rgba(20, 40, 52, 0.35) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    46px 46px,
+    46px 46px;
+}
+
+/* Slowly rotating concentric-ring motif (top-right) */
+.rings {
+  position: fixed;
+  top: 8%;
+  right: 5%;
+  width: 380px;
+  height: 380px;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(31, 90, 138, 0.14);
+  opacity: 0.5;
+}
+.ringsSweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(43, 240, 160, 0.07), transparent 60%);
+  animation: rkspin 14s linear infinite;
+}
+.ringsInner1 {
+  position: absolute;
+  inset: 64px;
+  border-radius: 50%;
+  border: 1px solid rgba(31, 90, 138, 0.12);
+}
+.ringsInner2 {
+  position: absolute;
+  inset: 140px;
+  border-radius: 50%;
+  border: 1px solid rgba(31, 90, 138, 0.1);
+}
+
+/* Centered content column */
+.content {
+  position: relative;
+  z-index: 1;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 26px 30px 60px;
+}
+
+/* Grid layout (home style A) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 14px;
+}
+
+/* Roster layout (home style B) */
+.roster {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.rosterList {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 50px;
+  color: #46645c;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}

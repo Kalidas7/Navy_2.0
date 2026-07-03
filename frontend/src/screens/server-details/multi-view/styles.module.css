@@ -1,0 +1,9 @@
+/* ============================================================
+   Multi-view (datacenter two-rack Stage 1) styles.
+
+   The two-rack stage reuses the shared root overlay from
+   ../styles.module.css (via DetailShell); the rack layout itself
+   is positioned in three.js (SceneController), not CSS. This file
+   is reserved for any view-specific rules unique to the two-rack
+   stage, kept dedicated so the view stays self-contained.
+   ============================================================ */

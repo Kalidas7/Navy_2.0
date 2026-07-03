@@ -1,0 +1,9 @@
+/* ============================================================
+   Single-view (one-rack) styles.
+
+   The single-rack detail experience currently reuses the shared
+   root overlay from ../styles.module.css (via DetailShell) and
+   per-component styling, so this file is intentionally reserved
+   for any view-specific rules unique to the single-rack layout.
+   Kept as a dedicated stylesheet so the view stays self-contained.
+   ============================================================ */

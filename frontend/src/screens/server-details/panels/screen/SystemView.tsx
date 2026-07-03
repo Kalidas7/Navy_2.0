@@ -1,0 +1,109 @@
+/** Display-panel SYSTEM tab: CPU/MEM cards, dual-line utilisation chart, temp gauge + disk donut.
+ *  The CPU LOAD card is a drop-down (localhost only): click to expand an inline
+ *  CPU-load graph with the safe/warn/high bands; click again to collapse. */
+import { useState } from 'react';
+import { StatCard } from '@/components/common/StatCard';
+import { TempGauge } from '@/components/common/TempGauge';
+import { DonutGauge } from '@/components/common/DonutGauge';
+import { CpuGraph } from '@/components/common/CpuGraph';
+import { colors } from '@/config/tokens';
+import type { GraphValues } from '@/types';
+
+export function SystemView({
+  g,
+  offline = false,
+  cpuHist = [],
+}: {
+  g: GraphValues;
+  offline?: boolean;
+  /** raw CPU-% history (0–100) for the expandable CPU-load graph (localhost). */
+  cpuHist?: number[];
+}) {
+  // Non-localhost racks have no live feed: show "—" and drop the unit suffix.
+  const dash = offline ? '—' : undefined;
+  // CPU LOAD is expandable only when there's a live feed to graph.
+  const expandable = !offline;
+  const [cpuOpen, setCpuOpen] = useState(false);
+  return (
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 13 }}>
+        {/* CPU LOAD — click to expand the banded CPU-load graph below. */}
+        <div
+          onClick={expandable ? () => setCpuOpen((o) => !o) : undefined}
+          data-rk-hover={expandable ? 'accent' : undefined}
+          style={{ cursor: expandable ? 'pointer' : 'default', position: 'relative' }}
+        >
+          <StatCard
+            label="CPU LOAD"
+            value={dash ?? g.cpuNow}
+            color={colors.accent}
+            valueSize={30}
+            unit={offline ? undefined : '%'}
+            unitColor="#3a6357"
+            unitSize={14}
+          />
+          {expandable && (
+            <span
+              className="mono"
+              style={{
+                position: 'absolute',
+                top: 10,
+                right: 11,
+                fontSize: 10,
+                color: colors.textMuted,
+                transform: cpuOpen ? 'rotate(180deg)' : 'none',
+                transition: 'transform .2s',
+              }}
+            >
+              ▾
+            </span>
+          )}
+        </div>
+        <StatCard
+          label="MEMORY"
+          value={dash ?? g.ramNow}
+          color={colors.blue}
+          valueSize={30}
+          unit={offline ? undefined : '%'}
+          unitColor="#356077"
+          unitSize={14}
+        />
+      </div>
+
+      {expandable && cpuOpen && (
+        <div style={{ border: `1px solid ${colors.accent}`, background: colors.panelBg, padding: 11, marginBottom: 13 }}>
+          <CpuGraph hist={cpuHist} now={g.cpuNow} />
+        </div>
+      )}
+
+      <div style={{ border: `1px solid ${colors.borderInner}`, background: colors.panelBg, padding: 11, marginBottom: 11 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em' }}>
+            UTILISATION · 48s
+          </span>
+          <span className="mono" style={{ fontSize: 9.5, color: '#3a6357' }}>
+            CPU ▬ MEM
+          </span>
+        </div>
+        <svg viewBox="0 0 100 38" preserveAspectRatio="none" style={{ width: '100%', height: 104, display: 'block' }}>
+          <line x1="0" y1="19" x2="100" y2="19" stroke="#122029" />
+          <line x1="0" y1="28.5" x2="100" y2="28.5" stroke="#122029" />
+          <polyline points={g.ramPts} fill="none" stroke={colors.navy} strokeWidth={0.9} strokeLinejoin="round" />
+          <polyline points={g.cpuPts} fill="none" stroke={colors.accent} strokeWidth={1.1} strokeLinejoin="round" />
+        </svg>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, alignItems: 'stretch' }}>
+        <div style={{ border: `1px solid ${colors.borderInner}`, background: colors.panelBg, padding: '10px 11px' }}>
+          <TempGauge value={g.tempNow} offline={offline} />
+        </div>
+        <div style={{ border: `1px solid ${colors.borderInner}`, background: colors.panelBg, padding: '10px 11px' }}>
+          <div className="mono" style={{ fontSize: 8.5, letterSpacing: '.14em', color: colors.textMuted, textAlign: 'center' }}>
+            DISK USAGE
+          </div>
+          <DonutGauge pct={offline ? 0 : g.diskNow} offline={offline} color={colors.blue} caption="USED" />
+        </div>
+      </div>
+    </>
+  );
+}

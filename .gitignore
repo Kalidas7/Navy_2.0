@@ -1,0 +1,25 @@
+# ── Dependencies / build artifacts (regenerated, never committed) ──
+frontend/node_modules/
+frontend/dist/
+backend/.venv/
+
+# ── Python caches / compiled ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ── Local database ──
+backend/db.sqlite3
+
+# ── Runtime artifacts ──
+.run/serve.pids
+
+# ── Logs ──
+*.log
+npm-debug.log*
+
+# ── Editor / OS cruft ──
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

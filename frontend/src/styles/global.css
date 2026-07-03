@@ -1,0 +1,149 @@
+/* ============================================================
+   Global styles — Naval Server Console
+   Base reset, fonts, scrollbars, and the prototype keyframes.
+   Per-component styling lives inline / in CSS modules; the
+   hard-edged (square corner) aesthetic is enforced here.
+   ============================================================ */
+
+:root {
+  --rk-base-bg: #06090b;
+  --rk-text-body: #cfe7dd;
+  --rk-accent: #2bf0a0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--rk-base-bg);
+  color: var(--rk-text-body);
+  font-family: 'Saira', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100%;
+}
+
+.rk-app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.cond {
+  font-family: 'Saira Condensed', sans-serif;
+}
+
+/* Square scrollbars to match the hard-edged aesthetic */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: #080d10;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a2a33;
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #27424f;
+}
+
+input {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ---------- Keyframes (from prototype) ---------- */
+@keyframes rkspin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes rkblink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes rkpulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 90, 90, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 90, 90, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 90, 90, 0);
+  }
+}
+@keyframes rkpulseW {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 184, 77, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(255, 184, 77, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 184, 77, 0);
+  }
+}
+@keyframes rkfade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rkpop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Hover affordances that inline styles can't express.
+   data-rk-hover lets components opt into the prototype hover treatments. */
+[data-rk-hover='card']:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+}
+[data-rk-hover='row']:hover {
+  border-color: #2bf0a0 !important;
+  transform: translateX(3px);
+}
+[data-rk-hover='accent']:hover {
+  border-color: #2bf0a0 !important;
+}
+[data-rk-hover='back']:hover {
+  border-color: #2bf0a0 !important;
+  color: #2bf0a0 !important;
+}
+[data-rk-hover='close']:hover {
+  border-color: #ff5a5a !important;
+  color: #ff5a5a !important;
+}
