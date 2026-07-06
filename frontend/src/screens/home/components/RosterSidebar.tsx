@@ -1,12 +1,12 @@
 /** Roster sidebar: per-vessel breakdown bars + status legend. */
-import { colors, STATUS_META } from '@/config/tokens';
+import { colors } from '@/config/tokens';
 import type { VesselStatVM } from '@/app/selectors';
 
-const LEGEND: { color: string; label: string }[] = [
-  { color: STATUS_META.online.color, label: 'ONLINE · NOMINAL' },
-  { color: STATUS_META.warn.color, label: 'WARNING' },
-  { color: STATUS_META.crit.color, label: 'CRITICAL' },
-  { color: STATUS_META.standby.color, label: 'STANDBY' },
+const LEGEND: { label: string }[] = [
+  { label: 'ONLINE · NOMINAL' },
+  { label: 'WARNING' },
+  { label: 'CRITICAL' },
+  { label: 'STANDBY' },
 ];
 
 export function RosterSidebar({ vessels }: { vessels: VesselStatVM[] }) {
@@ -49,7 +49,6 @@ export function RosterSidebar({ vessels }: { vessels: VesselStatVM[] }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {LEGEND.map((l) => (
           <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
             <span className="mono" style={{ fontSize: 10, color: colors.textMid2 }}>
               {l.label}
             </span>

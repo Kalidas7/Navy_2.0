@@ -4,7 +4,7 @@ import { selectCompButtons } from '../compView';
 import { toggleStyles, colors } from '@/config/tokens';
 
 export function ControlToolbar({ hideSubsystems = false }: { hideSubsystems?: boolean }) {
-  const { state, compStates, toggleAutoRotate, toggleExplode, selectComp } = useApp();
+  const { state, compStates, toggleAutoRotate, toggleExplode, toggleFadeOthers, selectComp } = useApp();
   // In the datacenter two-rack stage the six subsystem buttons are hidden until
   // a rack is clicked; the rotate/explode controls stay available.
   const buttons = hideSubsystems ? [] : selectCompButtons(compStates, state.selectedComp);
@@ -13,7 +13,11 @@ export function ControlToolbar({ hideSubsystems = false }: { hideSubsystems?: bo
   // quick-buttons use when off; keep the accent tint when active.
   const rot = toggleStyles(state.autoRotate);
   const exp = toggleStyles(state.exploded);
+  const fade = toggleStyles(state.fadeOthers);
   const inactiveBg = 'transparent';
+  // The fade toggle only does something while a component is focused, so only
+  // surface it then (see AskUserQuestion decision).
+  const showFade = !hideSubsystems && state.selectedComp != null;
 
   const sq = (bg: string, bd: string, fg: string, fontSize: number): React.CSSProperties => ({
     width: 40,
@@ -66,6 +70,18 @@ export function ControlToolbar({ hideSubsystems = false }: { hideSubsystems?: bo
         ⛶
       </button>
 
+      {showFade && (
+        <button
+          type="button"
+          title={state.fadeOthers ? 'Ghost view: on (show other components faded)' : 'Ghost view: off (hide other components)'}
+          onClick={toggleFadeOthers}
+          data-rk-hover="accent"
+          style={sq(state.fadeOthers ? fade.bg : inactiveBg, fade.bd, fade.fg, 16)}
+        >
+          ◐
+        </button>
+      )}
+
       {buttons.length > 0 && (
         <div style={{ height: 1, background: colors.borderCard, margin: '2px 0' }} />
       )}
@@ -81,7 +97,10 @@ export function ControlToolbar({ hideSubsystems = false }: { hideSubsystems?: bo
             ...sq(
               b.selected ? 'rgba(37,99,235,.10)' : 'transparent',
               b.selected ? colors.accent : 'transparent',
-              b.color,
+              // Icon is neutral until this subsystem is selected; only the
+              // selected one takes the accent. (Rotate/explode keep their own
+              // persistent toggle highlight above — untouched.)
+              b.selected ? colors.accent : colors.textMid,
               16,
             ),
             position: 'relative',

@@ -64,7 +64,6 @@ export function RadarView({ contacts }: { contacts: SonarContact[] }) {
               borderBottom: `1px solid ${colors.borderCard}`,
             }}
           >
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: c.color }} />
             <span className="mono" style={{ fontSize: 11, color: colors.textBody, width: 42 }}>
               {c.id}
             </span>
