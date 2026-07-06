@@ -20,7 +20,7 @@ export function NetworkView({ g, offline = false }: { g: GraphValues; offline?: 
         <StatCard
           label="▼ INGRESS"
           value={offline ? '—' : g.netInNow}
-          color={colors.blue}
+          color="#f59e0b"
           valueSize={26}
           unit={unit}
           unitColor="#9aa3af"
@@ -33,19 +33,20 @@ export function NetworkView({ g, offline = false }: { g: GraphValues; offline?: 
         </div>
         <svg viewBox="0 0 100 38" preserveAspectRatio="none" style={{ width: '100%', height: 108, display: 'block' }}>
           <defs>
+            {/* ingress = orange (secondary), egress = blue accent (primary) */}
             <linearGradient id="rkneti" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#2563eb" stopOpacity="0.18" />
-              <stop offset="1" stopColor="#2563eb" stopOpacity="0" />
+              <stop offset="0" stopColor="#f59e0b" stopOpacity="0.18" />
+              <stop offset="1" stopColor="#f59e0b" stopOpacity="0" />
             </linearGradient>
             <linearGradient id="rkneto" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#0891b2" stopOpacity="0.18" />
-              <stop offset="1" stopColor="#0891b2" stopOpacity="0" />
+              <stop offset="0" stopColor="#2563eb" stopOpacity="0.18" />
+              <stop offset="1" stopColor="#2563eb" stopOpacity="0" />
             </linearGradient>
           </defs>
           <polygon points={g.netInArea} fill="url(#rkneti)" />
           <polygon points={g.netOutArea} fill="url(#rkneto)" />
-          <polyline points={g.netInPts} fill="none" stroke="#2563eb" strokeWidth={0.9} />
-          <polyline points={g.netOutPts} fill="none" stroke="#0891b2" strokeWidth={0.9} />
+          <polyline points={g.netInPts} fill="none" stroke="#f59e0b" strokeWidth={0.9} />
+          <polyline points={g.netOutPts} fill="none" stroke="#2563eb" strokeWidth={0.9} />
         </svg>
       </div>
 

@@ -62,7 +62,7 @@ export function SystemView({
         <StatCard
           label="MEMORY"
           value={dash ?? g.ramNow}
-          color={colors.blue}
+          color="#f59e0b"
           valueSize={30}
           unit={offline ? undefined : '%'}
           unitColor="#9aa3af"
@@ -82,13 +82,13 @@ export function SystemView({
             UTILISATION · 48s
           </span>
           <span className="mono" style={{ fontSize: 9.5, color: '#9aa3af' }}>
-            CPU ▬ MEM
+            <span style={{ color: colors.accent }}>CPU</span> ▬ <span style={{ color: '#f59e0b' }}>MEM</span>
           </span>
         </div>
         <svg viewBox="0 0 100 38" preserveAspectRatio="none" style={{ width: '100%', height: 104, display: 'block' }}>
           <line x1="0" y1="19" x2="100" y2="19" stroke="#e2e5ea" />
           <line x1="0" y1="28.5" x2="100" y2="28.5" stroke="#e2e5ea" />
-          <polyline points={g.ramPts} fill="none" stroke={colors.navy} strokeWidth={0.9} strokeLinejoin="round" />
+          <polyline points={g.ramPts} fill="none" stroke="#f59e0b" strokeWidth={0.9} strokeLinejoin="round" />
           <polyline points={g.cpuPts} fill="none" stroke={colors.accent} strokeWidth={1.1} strokeLinejoin="round" />
         </svg>
       </div>
