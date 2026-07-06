@@ -44,7 +44,9 @@ export function selectActiveComp(
     return { label: '', glyph: '', color: colors.accent, stateLabel: '', tint: 'transparent' };
   }
   const st = compStates[def.key] ?? 'ok';
-  const rgb = st === 'crit' ? '255,90,90' : st === 'warn' ? '255,184,77' : '43,240,160';
+  // Header tint per state: red / amber / accent-blue (nominal). Light-theme RGBs
+  // matching config/tokens (dc2626 / d97706 / 2563eb).
+  const rgb = st === 'crit' ? '220,38,38' : st === 'warn' ? '217,119,6' : '37,99,235';
   return {
     label: def.label,
     glyph: def.glyph,

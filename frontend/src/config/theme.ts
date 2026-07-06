@@ -5,7 +5,7 @@
 import { colors } from './tokens';
 
 export interface ThemeConfig {
-  /** primary accent — options: #2bf0a0 / #37c2ff / #ffb84d */
+  /** primary accent — options: #2563eb / #059669 / #7c3aed / #0891b2 */
   accent: string;
   /** secondary navy */
   navyTint: string;

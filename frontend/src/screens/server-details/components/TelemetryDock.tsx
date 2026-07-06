@@ -25,7 +25,7 @@ function DockStat({
         borderRight: `1px solid ${colors.borderCard}`,
       }}
     >
-      <span className="mono" style={{ fontSize: 9, color: colors.textMuted, letterSpacing: '.12em' }}>
+      <span className="mlabel" style={{ fontSize: 9, color: colors.textMuted, letterSpacing: '.12em' }}>
         {label}
       </span>
       <span className="cond" style={{ fontSize: 19, fontWeight: 700, color, lineHeight: 1 }}>
@@ -60,9 +60,8 @@ export function TelemetryDock({
         display: 'flex',
         alignItems: 'center',
         padding: '0 16px',
-        background: 'linear-gradient(0deg,rgba(6,11,14,.95),rgba(6,11,14,.45))',
+        background: colors.panelBg,
         borderTop: `1px solid ${colors.borderChrome}`,
-        backdropFilter: 'blur(6px)',
         pointerEvents: 'auto',
         zIndex: 4,
       }}
@@ -95,7 +94,7 @@ export function TelemetryDock({
         className="mono"
         style={{
           fontSize: 10,
-          color: live ? colors.accent : colors.textMuted2,
+          color: live ? '#16a34a' : colors.textMuted2,
           letterSpacing: '.1em',
           display: 'flex',
           alignItems: 'center',
@@ -108,8 +107,7 @@ export function TelemetryDock({
               width: 7,
               height: 7,
               borderRadius: '50%',
-              background: status === 'live' || status === 'polling' ? colors.accent : colors.amber,
-              boxShadow: `0 0 6px ${colors.accent}`,
+              background: status === 'live' || status === 'polling' ? '#16a34a' : colors.amber,
             }}
           />
         )}

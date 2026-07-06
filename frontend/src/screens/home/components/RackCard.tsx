@@ -5,9 +5,9 @@
  * each tick like a Task Manager readout. Only the live nodes touch the DOM per
  * tick; the static subtree is bailed out of by React.memo.
  *
- * Per the handoff's "recent design decision": CPU/MEM/TEMP are all neutral
- * (#cfe7dd) here, and the left accent bar is transparent for nominal racks
- * (server.barColor already encodes that).
+ * Per the handoff: CPU/MEM/TEMP are all neutral (primary text) here, and the
+ * left accent bar is transparent for nominal racks (server.barColor already
+ * encodes that).
  */
 import { useCallback } from 'react';
 import { useApp } from '@/app/AppContext';
@@ -62,7 +62,7 @@ export function RackCard({ server }: { server: FleetServerVM }) {
       </div>
 
       <div style={{ marginBottom: 11 }}>
-        <Sparkline points={sparkPts} stroke={server.statusColor} strokeWidth={1} height={30} />
+        <Sparkline points={sparkPts} stroke={colors.accent} strokeWidth={1.4} opacity={1} height={30} />
       </div>
 
       {/* footer: single cheap text node, kept inline to preserve visual order */}
@@ -72,7 +72,7 @@ export function RackCard({ server }: { server: FleetServerVM }) {
           justifyContent: 'space-between',
           alignItems: 'center',
           paddingTop: 10,
-          borderTop: `1px solid #112027`,
+          borderTop: `1px solid ${colors.borderCard}`,
         }}
       >
         <span className="mono" style={{ fontSize: 9.5, color: colors.textMuted }}>

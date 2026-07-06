@@ -29,7 +29,7 @@ export function MetricValue({
 }: MetricValueProps) {
   return (
     <div style={{ flex }}>
-      <div className="mono" style={{ fontSize: labelSize, color: labelColor, letterSpacing: '.1em' }}>
+      <div className="mlabel" style={{ fontSize: labelSize, color: labelColor, letterSpacing: '.1em', fontWeight: 700, textTransform: 'uppercase' }}>
         {label}
       </div>
       <div className="cond" style={{ fontSize: valueSize, fontWeight: 700, color }}>

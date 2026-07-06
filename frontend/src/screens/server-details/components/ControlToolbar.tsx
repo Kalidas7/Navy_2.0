@@ -13,13 +13,14 @@ export function ControlToolbar({ hideSubsystems = false }: { hideSubsystems?: bo
   // quick-buttons use when off; keep the accent tint when active.
   const rot = toggleStyles(state.autoRotate);
   const exp = toggleStyles(state.exploded);
-  const inactiveBg = 'rgba(10,18,22,.8)';
+  const inactiveBg = 'transparent';
 
   const sq = (bg: string, bd: string, fg: string, fontSize: number): React.CSSProperties => ({
-    width: 42,
-    height: 42,
+    width: 40,
+    height: 40,
     display: 'grid',
     placeItems: 'center',
+    borderRadius: 8,
     background: bg,
     border: `1px solid ${bd}`,
     color: fg,
@@ -31,12 +32,17 @@ export function ControlToolbar({ hideSubsystems = false }: { hideSubsystems?: bo
     <div
       style={{
         position: 'absolute',
-        left: 16,
+        left: 14,
         top: '50%',
         transform: 'translateY(-50%)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 9,
+        gap: 8,
+        padding: 8,
+        borderRadius: 12,
+        background: colors.panelBg,
+        border: `1px solid ${colors.borderCard}`,
+        boxShadow: '0 4px 16px rgba(16,24,40,.08)',
         pointerEvents: 'auto',
         zIndex: 4,
       }}
@@ -73,8 +79,8 @@ export function ControlToolbar({ hideSubsystems = false }: { hideSubsystems?: bo
           data-rk-hover="accent"
           style={{
             ...sq(
-              b.selected ? 'rgba(43,240,160,.12)' : 'rgba(10,18,22,.8)',
-              b.selected ? colors.accent : colors.borderInput,
+              b.selected ? 'rgba(37,99,235,.10)' : 'transparent',
+              b.selected ? colors.accent : 'transparent',
               b.color,
               16,
             ),

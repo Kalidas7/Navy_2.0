@@ -1,12 +1,12 @@
 /** Roster sidebar: per-vessel breakdown bars + status legend. */
-import { colors } from '@/config/tokens';
+import { colors, STATUS_META } from '@/config/tokens';
 import type { VesselStatVM } from '@/app/selectors';
 
 const LEGEND: { color: string; label: string }[] = [
-  { color: '#2bf0a0', label: 'ONLINE · NOMINAL' },
-  { color: '#ffb84d', label: 'WARNING' },
-  { color: '#ff5a5a', label: 'CRITICAL' },
-  { color: '#5b86a8', label: 'STANDBY' },
+  { color: STATUS_META.online.color, label: 'ONLINE · NOMINAL' },
+  { color: STATUS_META.warn.color, label: 'WARNING' },
+  { color: STATUS_META.crit.color, label: 'CRITICAL' },
+  { color: STATUS_META.standby.color, label: 'STANDBY' },
 ];
 
 export function RosterSidebar({ vessels }: { vessels: VesselStatVM[] }) {
@@ -22,7 +22,7 @@ export function RosterSidebar({ vessels }: { vessels: VesselStatVM[] }) {
         top: 0,
       }}
     >
-      <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.14em', marginBottom: 11 }}>
+      <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.14em', marginBottom: 11 }}>
         FLEET BREAKDOWN
       </div>
       {vessels.map((v) => (
@@ -35,7 +35,7 @@ export function RosterSidebar({ vessels }: { vessels: VesselStatVM[] }) {
               {v.count}
             </span>
           </div>
-          <div style={{ height: 5, background: '#0f1d24' }}>
+          <div style={{ height: 5, background: colors.borderCard }}>
             <div style={{ height: '100%', width: `${v.pct}%`, background: colors.navy }} />
           </div>
         </div>
@@ -43,14 +43,14 @@ export function RosterSidebar({ vessels }: { vessels: VesselStatVM[] }) {
 
       <div style={{ height: 1, background: colors.borderCard, margin: '14px 0' }} />
 
-      <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.14em', marginBottom: 9 }}>
+      <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.14em', marginBottom: 9 }}>
         LEGEND
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {LEGEND.map((l) => (
           <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
-            <span className="mono" style={{ fontSize: 10, color: '#7c9a90' }}>
+            <span className="mono" style={{ fontSize: 10, color: colors.textMid2 }}>
               {l.label}
             </span>
           </div>

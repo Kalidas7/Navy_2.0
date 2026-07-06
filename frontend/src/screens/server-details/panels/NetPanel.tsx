@@ -39,7 +39,7 @@ export function NetPanel() {
 
   return (
     <>
-      <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 9 }}>
+      <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 9 }}>
         NETWORK INTERFACES
       </div>
       {ports.length === 0 && <NoData label={offline ? 'NO LIVE FEED' : 'NO INTERFACES'} />}
@@ -55,7 +55,8 @@ export function NetPanel() {
               padding: '10px 11px',
               marginBottom: 7,
               border: `1px solid ${colors.borderInner}`,
-              background: colors.panelBg,
+              borderRadius: 8,
+              background: colors.iconTileGradient,
               opacity: up ? 1 : 0.72,
             }}
           >

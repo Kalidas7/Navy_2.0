@@ -47,12 +47,12 @@ export const RackCardStatic = memo(function RackCardStatic({
       >
         <div>
           <div
-            className="cond"
-            style={{ fontSize: 19, fontWeight: 700, letterSpacing: '.05em', color: colors.textHi, lineHeight: 1 }}
+            className="mlabel"
+            style={{ fontSize: 15, fontWeight: 700, letterSpacing: '.01em', color: colors.textHi, lineHeight: 1.15 }}
           >
             {code}
           </div>
-          <div className="mono" style={{ fontSize: 10, color: colors.textMuted, letterSpacing: '.06em', marginTop: 3 }}>
+          <div className="mlabel" style={{ fontSize: 12, color: colors.textMuted, marginTop: 3 }}>
             {vessel} · {pennant}
           </div>
         </div>
@@ -66,7 +66,7 @@ export const RackCardStatic = memo(function RackCardStatic({
         />
       </div>
 
-      <div className="mono" style={{ fontSize: 10.5, color: '#7c9a90', letterSpacing: '.04em', marginBottom: 12 }}>
+      <div className="mlabel" style={{ fontSize: 12, color: colors.textMid2, marginBottom: 12 }}>
         {role}
       </div>
     </>

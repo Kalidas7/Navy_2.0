@@ -22,10 +22,10 @@ export function FanPanel() {
     <>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 13 }}>
         <StatCard label="FAN SPEED" value={offline || g.fanTempNow < 0 ? '—' : g.fanTempNow === 0 ? 'IDLE' : `${g.fanTempNow} RPM`} color={colors.amber} valueSize={26} />
-        <StatCard label="DISK I/O" value={offline ? '—' : g.airflowNow} color={colors.blue} valueSize={26} unit={offline ? undefined : ' MB/s'} unitColor="#356077" unitSize={12} />
+        <StatCard label="DISK I/O" value={offline ? '—' : g.airflowNow} color={colors.blue} valueSize={26} unit={offline ? undefined : ' MB/s'} unitColor="#9aa3af" unitSize={12} />
       </div>
 
-      <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 9 }}>
+      <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 9 }}>
         {offline ? 'FANS' : `FANS · ${fans.length}`}
       </div>
       {fans.length === 0 && <NoData label={offline ? 'NO LIVE FEED' : 'NO FANS'} />}
@@ -39,7 +39,8 @@ export function FanPanel() {
               gap: 11,
               padding: 10,
               border: `1px solid ${colors.borderInner}`,
-              background: colors.panelBg,
+              borderRadius: 8,
+              background: colors.iconTileGradient,
             }}
           >
             <span
@@ -53,7 +54,7 @@ export function FanPanel() {
               ❋
             </span>
             <div>
-              <div className="mono" style={{ fontSize: 10, color: '#7c9a90' }}>
+              <div className="mono" style={{ fontSize: 10, color: '#9aa3af' }}>
                 {f.id}
               </div>
               <div className="cond" style={{ fontSize: 18, fontWeight: 700, color: f.color }}>

@@ -30,12 +30,14 @@ export function ToggleChip({
       type="button"
       onClick={onClick}
       title={title}
-      className="cond"
+      className="mlabel"
       style={{
         padding,
         fontSize,
-        letterSpacing: '.08em',
+        fontWeight: 600,
+        letterSpacing: '.02em',
         cursor: 'pointer',
+        borderRadius: 8,
         background: t.bg,
         color: t.fg,
         border: `1px solid ${t.bd}`,

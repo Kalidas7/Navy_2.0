@@ -322,20 +322,15 @@ export class SceneController {
         });
 
         // Two identical racks SIDE BY SIDE (Stage 1). Clicking either collapses
-        // to the single centered main rack (Stage 2).
+        // to the single centered main rack (Stage 2). The twin SHARES the main
+        // rack's geometries AND materials — clone(true) already shares geometry,
+        // and the twin deliberately reuses materials too: focus dimming only runs
+        // AFTER the view has collapsed and the twin is hidden, so there's nothing
+        // to bleed into. Sharing halves the material GPU footprint and keeps
+        // teardown simple (each unique resource is disposed exactly once).
         const twin = root.clone(true);
         this.twinGroup = twin;
         this.scene.add(twin);
-        twin.traverse((o) => {
-          const mesh = o as THREE.Mesh;
-          if (mesh.isMesh) {
-            // Give the twin its own material clones so focus dimming of the main
-            // rack never bleeds into it (it's hidden in Stage 2 anyway).
-            if (mesh.material) {
-              mesh.material = (mesh.material as THREE.MeshStandardMaterial).clone();
-            }
-          }
-        });
         // Position both racks side by side; collapse handling recenters later.
         this.mainOffsetX = -halfSpan;
         this.twinOffsetX = halfSpan;
@@ -570,6 +565,34 @@ export class SceneController {
         this.renderer.domElement.removeEventListener('pointerup', this.onPointerUp);
       }
     }
+
+    // Release GPU memory. Geometries, materials, and their textures live in VRAM
+    // and are NOT freed by JS garbage collection — three.js requires an explicit
+    // dispose() on each. Walk both racks (the twin shares the main rack's
+    // geometry + materials) and dispose each UNIQUE resource exactly once; the
+    // Sets guard against double-disposing a shared geometry/material.
+    const geometries = new Set<THREE.BufferGeometry>();
+    const materials = new Set<THREE.Material>();
+    for (const group of [this.rootGroup, this.twinGroup]) {
+      group?.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        if (mesh.geometry) geometries.add(mesh.geometry);
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        for (const m of mats) if (m) materials.add(m);
+      });
+    }
+    for (const g of geometries) g.dispose();
+    for (const m of materials) {
+      // Free any textures the material references, then the material itself.
+      for (const value of Object.values(m)) {
+        if (value && (value as THREE.Texture).isTexture) (value as THREE.Texture).dispose();
+      }
+      m.dispose();
+    }
+    this.rootGroup = null;
+    this.twinGroup = null;
+
     this.controls?.dispose();
     this.pmrem?.dispose();
     this.renderer?.dispose();

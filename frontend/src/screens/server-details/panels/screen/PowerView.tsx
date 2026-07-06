@@ -20,8 +20,8 @@ export function PowerView({
   // racks render "—" / an empty gauge.
   return (
     <>
-      <div style={{ border: `1px solid ${colors.borderInner}`, background: colors.panelBg, padding: '10px 11px', marginBottom: 9 }}>
-        <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 8 }}>
+      <div style={{ border: `1px solid ${colors.borderInner}`, borderRadius: 8, background: colors.iconTileGradient, padding: '10px 11px', marginBottom: 9 }}>
+        <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 8 }}>
           BATTERY
         </div>
         <BatteryGauge
@@ -41,11 +41,11 @@ export function PowerView({
           color={colors.amber}
           valueSize={26}
           unit={offline ? undefined : 'W'}
-          unitColor="#7a5a2a"
+          unitColor="#9aa3af"
         />
       </div>
 
-      <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 7 }}>
+      <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 7 }}>
         LOAD DISTRIBUTION
       </div>
       {rails.map((r) => (
@@ -53,10 +53,10 @@ export function PowerView({
           <span className="mono" style={{ fontSize: 11, color: colors.textMid, width: 46 }}>
             {r.name}
           </span>
-          <div style={{ flex: 1, height: 8, background: '#0f1d24' }}>
+          <div style={{ flex: 1, height: 8, borderRadius: 4, overflow: 'hidden', background: '#e2e5ea' }}>
             <div style={{ height: '100%', width: `${r.pct}%`, background: r.color }} />
           </div>
-          <span className="mono" style={{ fontSize: 10.5, color: '#7c9a90', width: 34, textAlign: 'right' }}>
+          <span className="mono" style={{ fontSize: 10.5, color: '#9aa3af', width: 34, textAlign: 'right' }}>
             {r.pct}%
           </span>
         </div>

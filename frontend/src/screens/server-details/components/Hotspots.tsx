@@ -62,14 +62,11 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
                 cursor: 'pointer',
                 pointerEvents: m.visible ? 'auto' : 'none',
                 fontSize: 15,
-                background: 'rgba(7,12,15,.82)',
-                backdropFilter: 'blur(2px)',
+                background: colors.panelBg,
                 transition: 'transform .15s',
                 border: `1.6px solid ${col}`,
                 color: col,
-                boxShadow: active
-                  ? `0 0 16px ${col}`
-                  : `0 0 8px ${st === 'ok' ? 'rgba(43,240,160,.25)' : col}`,
+                boxShadow: '0 2px 8px rgba(16,24,40,.12)',
                 transform: active ? 'scale(1.18)' : 'scale(1)',
                 animation,
               }}
@@ -80,10 +77,11 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
               <div
                 className="cond"
                 style={{
-                  padding: '3px 9px',
-                  background: 'rgba(7,12,15,.82)',
+                  padding: '5px 10px',
+                  borderRadius: 6,
+                  background: colors.panelBg,
                   border: `1px solid ${active ? col : colors.borderInput}`,
-                  fontFamily: 'Saira Condensed,sans-serif',
+                  boxShadow: '0 2px 8px rgba(16,24,40,.08)',
                   fontSize: 11.5,
                   letterSpacing: '.1em',
                   whiteSpace: 'nowrap',

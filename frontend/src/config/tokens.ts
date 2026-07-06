@@ -9,39 +9,39 @@
 
 export const colors = {
   // Surfaces
-  baseBg: '#06090b',
-  panelBg: '#0a1318',
-  cardGradient: 'linear-gradient(160deg,#0b141a,#091016)',
-  cardGradientRow: 'linear-gradient(120deg,#0b141a,#091016)',
-  iconTileGradient: 'linear-gradient(160deg,#0d1a22,#0a1318)',
+  baseBg: '#f5f6f8', // page background (--bg)
+  panelBg: '#ffffff', // cards, bars, panels (--panel)
+  cardGradient: 'linear-gradient(160deg,#ffffff,#ffffff)',
+  cardGradientRow: 'linear-gradient(120deg,#ffffff,#ffffff)',
+  iconTileGradient: 'linear-gradient(160deg,#f4f6f8,#eef1f5)', // inset tile (--chip)
 
   // Accents / status
-  accent: '#2bf0a0', // primary accent, ONLINE/nominal, CPU
-  blue: '#37c2ff', // memory, ingress
-  navy: '#2f7fc4', // bars, grid lines
-  navyDeep: '#1c5a8a',
-  amber: '#ffb84d', // warnings, temp, power draw
-  red: '#ff5a5a', // critical
-  standby: '#5b86a8', // standby / down
+  accent: '#2563eb', // primary accent, ONLINE/nominal, CPU, selection, links, charts
+  blue: '#2563eb', // memory, ingress
+  navy: '#2563eb', // bars, grid lines
+  navyDeep: '#1e4fc4',
+  amber: '#d97706', // warnings, temp, power draw
+  red: '#dc2626', // critical
+  standby: '#64748b', // standby / down
 
   // Text
-  textHi: '#eafff5', // headings, code
-  textBody: '#cfe7dd', // default / neutral metrics
-  textMid: '#9fc4b6',
-  textMid2: '#7c9a90',
-  textMuted: '#5d7a74',
-  textMuted2: '#46645c',
+  textHi: '#1a1f26', // headings, code (--tx)
+  textBody: '#1a1f26', // default / neutral metrics
+  textMid: '#4b5563', // (--tx2)
+  textMid2: '#6b7280', // (--mut)
+  textMuted: '#6b7280', // (--mut)
+  textMuted2: '#9aa3af', // faint text / micro-labels (--mut2)
 
   // Borders
-  borderCard: '#16282f',
-  borderChrome: '#14242c',
-  borderInput: '#1c2f38',
-  borderInner: '#15262e',
-  borderIcon: '#27424f',
+  borderCard: '#e2e5ea', // (--bd)
+  borderChrome: '#e2e5ea',
+  borderInput: '#e2e5ea',
+  borderInner: '#e2e5ea',
+  borderIcon: '#d5dae1', // (--bd2)
 
   // Misc
-  bracketGreen: '#1f4a3a',
-  alertText: '#ff9a6a',
+  bracketGreen: '#d5dae1', // corner brackets removed for light theme; neutral fallback
+  alertText: '#d97706',
 
   // Flag chip
   flagSaffron: '#FF9933',
@@ -58,15 +58,20 @@ export interface StatusMeta {
 }
 
 export const STATUS_META: Record<string, StatusMeta> = {
-  online: { color: '#2bf0a0', label: 'ONLINE', bd: '#15402e', bg: 'rgba(11,30,22,.55)' },
-  warn: { color: '#ffb84d', label: 'WARNING', bd: '#3a2c12', bg: 'rgba(30,22,8,.55)' },
-  crit: { color: '#ff5a5a', label: 'CRITICAL', bd: '#3a1414', bg: 'rgba(30,10,10,.55)' },
-  standby: { color: '#5b86a8', label: 'STANDBY', bd: '#1c3242', bg: 'rgba(12,24,34,.55)' },
+  online: { color: '#16a34a', label: 'ONLINE', bd: 'rgba(22,163,74,.35)', bg: 'rgba(22,163,74,.12)' },
+  warn: { color: '#d97706', label: 'WARNING', bd: 'rgba(217,119,6,.35)', bg: 'rgba(217,119,6,.12)' },
+  crit: { color: '#dc2626', label: 'CRITICAL', bd: 'rgba(220,38,38,.35)', bg: 'rgba(220,38,38,.12)' },
+  standby: { color: '#64748b', label: 'STANDBY', bd: 'rgba(100,116,139,.35)', bg: 'rgba(100,116,139,.12)' },
 };
 
 export function statusMeta(status: string): StatusMeta {
   return (
-    STATUS_META[status] ?? { color: '#5b86a8', label: '—', bd: '#1c3242', bg: 'rgba(12,24,34,.5)' }
+    STATUS_META[status] ?? {
+      color: '#64748b',
+      label: '—',
+      bd: 'rgba(100,116,139,.35)',
+      bg: 'rgba(100,116,139,.12)',
+    }
   );
 }
 
@@ -94,14 +99,38 @@ export function compStateLabel(state: string): string {
 }
 
 export const fonts = {
-  body: "'Saira',system-ui,sans-serif",
-  cond: "'Saira Condensed',sans-serif",
-  mono: "'JetBrains Mono',monospace",
+  body: "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif",
+  cond: "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif",
+  mono: 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace',
+} as const;
+
+/**
+ * Corner-radius scale (light-theme redesign, from the handoff):
+ * 6px chips/small buttons · 8px buttons/tiles/rows/inputs · 10px cards ·
+ * 12px floating toolbar + side panel · 999px pills.
+ */
+export const radii = {
+  sm: 6,
+  md: 8,
+  card: 10,
+  panel: 12,
+  pill: 999,
+} as const;
+
+/**
+ * Elevation scale (handoff): resting card shadow, hover lift, floating toolbar,
+ * and side panel. Applied to surfaces that float over the page/scene.
+ */
+export const shadows = {
+  card: '0 1px 2px rgba(16,24,40,.05)',
+  cardHover: '0 8px 20px rgba(16,24,40,.10)',
+  toolbar: '0 4px 16px rgba(16,24,40,.08)',
+  panel: '0 8px 28px rgba(16,24,40,.12)',
 } as const;
 
 /** Active/inactive toggle styling shared by filter chips, tabs, view buttons. */
 export function toggleStyles(active: boolean, accent: string = colors.accent) {
   return active
-    ? { bg: 'rgba(43,240,160,.12)', fg: accent, bd: accent }
-    : { bg: 'transparent', fg: '#6f8a82', bd: colors.borderInput };
+    ? { bg: 'rgba(37,99,235,.10)', fg: accent, bd: accent }
+    : { bg: colors.panelBg, fg: colors.textMid, bd: colors.borderInput };
 }

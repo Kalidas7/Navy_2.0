@@ -31,8 +31,8 @@ export function StatCard({
   children,
 }: StatCardProps) {
   return (
-    <div style={{ border: `1px solid ${colors.borderInner}`, background: colors.panelBg, padding: '10px 11px' }}>
-      <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em' }}>
+    <div style={{ border: `1px solid ${colors.borderInner}`, borderRadius: 8, background: colors.iconTileGradient, padding: '10px 11px' }}>
+      <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted2, letterSpacing: '.1em', fontWeight: 700, textTransform: 'uppercase' }}>
         {label}
       </div>
       <div className="cond" style={{ fontSize: valueSize, fontWeight: 700, color, lineHeight: 1 }}>
