@@ -19,6 +19,10 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
   const showLabels = theme.hotspotLabels;
   const sel = state.selectedComp;
 
+  // When a component is selected, hide ALL hotspots so only that component's
+  // panel is in focus. They reappear when the selection is closed.
+  if (sel) return null;
+
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none' }}>
       {markers.map((m) => {
@@ -29,6 +33,10 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
         const active = sel === m.key;
         const animation =
           st === 'crit' ? 'rkpulse 1.4s infinite' : st === 'warn' ? 'rkpulseW 1.8s infinite' : 'none';
+        // Left-side markers put the label to the LEFT of the dot (row-reverse)
+        // and anchor from the right edge, so the dot sits left of the model and
+        // the label extends outward — balancing the markers across both sides.
+        const onLeft = def.side === 'left';
 
         return (
           <div
@@ -38,13 +46,23 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
               left: 0,
               top: 0,
               display: 'flex',
+              // Left-side markers: label first (to the LEFT of the dot).
+              flexDirection: onLeft ? 'row-reverse' : 'row',
               alignItems: 'center',
               gap: 8,
               pointerEvents: 'none',
               transition: 'opacity .2s',
               willChange: 'transform',
-              transform: `translate(${m.x.toFixed(1)}px,${m.y.toFixed(1)}px) translate(-15px,-15px)`,
-              opacity: m.visible ? 1 : 0,
+              // Anchor at the projected point. Right markers grow rightward from
+              // the dot (dot at the point). Left markers grow leftward: shift the
+              // whole marker left by its own width (−100%) so the dot ends up just
+              // left of the point and the label extends further left.
+              transform: onLeft
+                ? `translate(${m.x.toFixed(1)}px,${m.y.toFixed(1)}px) translate(-100%,-15px) translateX(15px)`
+                : `translate(${m.x.toFixed(1)}px,${m.y.toFixed(1)}px) translate(-15px,-15px)`,
+              // Behind-camera hides the marker; `reveal` (0→1) fades hotspots in
+              // during the collapse fly-in so they appear as part of the motion.
+              opacity: m.visible ? m.reveal : 0,
             }}
           >
             <button
@@ -60,7 +78,7 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
                 display: 'grid',
                 placeItems: 'center',
                 cursor: 'pointer',
-                pointerEvents: m.visible ? 'auto' : 'none',
+                pointerEvents: m.visible && m.reveal > 0.9 ? 'auto' : 'none',
                 fontSize: 15,
                 background: colors.panelBg,
                 transition: 'transform .15s',
@@ -76,6 +94,10 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
             {showLabels && (
               <div
                 className="cond"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  selectComp(m.key as CompKey);
+                }}
                 style={{
                   padding: '5px 10px',
                   borderRadius: 6,
@@ -85,7 +107,8 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
                   fontSize: 11.5,
                   letterSpacing: '.1em',
                   whiteSpace: 'nowrap',
-                  pointerEvents: 'none',
+                  cursor: 'pointer',
+                  pointerEvents: m.visible && m.reveal > 0.9 ? 'auto' : 'none',
                   color: active ? col : colors.textMid,
                 }}
               >

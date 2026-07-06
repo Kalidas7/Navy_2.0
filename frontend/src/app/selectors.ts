@@ -121,3 +121,54 @@ export function selectActiveServer(state: AppState): Server {
 export function selectAlertCount(compStates: CompStates): number {
   return Object.values(compStates).filter((v) => v === 'warn' || v === 'crit').length;
 }
+
+/** One notification row in the alerts dropdown. */
+export interface NotifItem {
+  id: string;
+  /** server code, or '' for a subsystem row on the active server */
+  server: string;
+  /** subsystem name (e.g. 'CPU') or '' for a server-level row */
+  subsystem: string;
+  /** 'WARNING' | 'CRITICAL' */
+  state: string;
+  /** severity colour (status palette) */
+  color: string;
+}
+
+/**
+ * "Current" alerts — the ACTIVE server's real warn/crit subsystems, taken from
+ * the live component payload (state.comp.statusItems). No fabricated data: only
+ * subsystems the backend actually reported as WARNING/CRITICAL appear.
+ */
+export function selectCurrentNotifs(state: AppState): NotifItem[] {
+  const srv = selectActiveServer(state);
+  return state.comp.statusItems
+    .filter((it) => it.state === 'WARNING' || it.state === 'CRITICAL')
+    .map((it) => ({
+      id: `${srv.id}:${it.name}`,
+      server: srv.code,
+      subsystem: it.name,
+      state: it.state,
+      color: it.color,
+    }));
+}
+
+/**
+ * "All" alerts — the active server's real subsystem alerts PLUS a server-level
+ * row for every OTHER server whose overall status is warn/crit. The other racks
+ * carry no per-subsystem telemetry (they're identity-only shells), so we honestly
+ * surface their coarse status rather than inventing subsystem detail.
+ */
+export function selectAllNotifs(state: AppState): NotifItem[] {
+  const current = selectCurrentNotifs(state);
+  const others = state.servers
+    .filter((s) => s.id !== state.activeServerId && (s.status === 'warn' || s.status === 'crit'))
+    .map((s) => ({
+      id: s.id,
+      server: s.code,
+      subsystem: '',
+      state: s.status === 'crit' ? 'CRITICAL' : 'WARNING',
+      color: statusMeta(s.status).color,
+    }));
+  return [...current, ...others];
+}

@@ -5,13 +5,16 @@ import type { CompDef } from '@/types';
  * The `pos` values are tuned to the normalized rack footprint — re-author them
  * if the model changes.
  */
+// `side` splits the floating markers across both sides of the model so they
+// aren't all stacked on the right (per the design handoff: screen + status on
+// the right; drives, net, fan, power on the left). Purely a label-layout hint.
 export const COMPS: CompDef[] = [
-  { key: 'screen', label: 'DISPLAY PANEL', glyph: '▤', pos: [1.62, 3.15, 1.02] },
-  { key: 'status', label: 'STATUS ARRAY', glyph: '◉', pos: [1.66, 4.35, 1.02] },
-  { key: 'drives', label: 'DRIVE BAY', glyph: '▦', pos: [0.05, 3.55, 0.98] },
-  { key: 'net', label: 'NETWORK PORTS', glyph: '⇄', pos: [0.05, 2.6, 0.98] },
-  { key: 'fan', label: 'COOLING FANS', glyph: '❋', pos: [0.05, 1.55, 0.98] },
-  { key: 'power', label: 'POWER UNIT', glyph: '⏻', pos: [0.05, 0.55, 0.98] },
+  { key: 'screen', label: 'DISPLAY PANEL', glyph: '▤', pos: [1.62, 3.15, 1.02], side: 'right' },
+  { key: 'status', label: 'STATUS ARRAY', glyph: '◉', pos: [1.66, 4.35, 1.02], side: 'right' },
+  { key: 'drives', label: 'DRIVE BAY', glyph: '▦', pos: [0.05, 3.55, 0.98], side: 'left' },
+  { key: 'net', label: 'NETWORK PORTS', glyph: '⇄', pos: [0.05, 2.6, 0.98], side: 'left' },
+  { key: 'fan', label: 'COOLING FANS', glyph: '❋', pos: [0.05, 1.55, 0.98], side: 'left' },
+  { key: 'power', label: 'POWER UNIT', glyph: '⏻', pos: [0.05, 0.55, 0.98], side: 'left' },
 ];
 
 /** Display-panel sub-tabs, in order. */

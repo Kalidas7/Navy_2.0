@@ -1,6 +1,6 @@
 /**
  * The "rail" — a docked side panel shown when a subsystem is selected.
- * Header (glyph tile + label + state + close) over a scrollable body that
+ * Header (label + state + close) over a scrollable body that
  * routes to the selected subsystem's panel.
  */
 import { useApp } from '@/app/AppContext';
@@ -66,20 +66,6 @@ export function RailPanel() {
             background: `linear-gradient(90deg,${active.tint},transparent)`,
           }}
         >
-          <span
-            style={{
-              width: 34,
-              height: 34,
-              display: 'grid',
-              placeItems: 'center',
-              borderRadius: 8,
-              border: `1px solid ${active.color}`,
-              color: active.color,
-              fontSize: 17,
-            }}
-          >
-            {active.glyph}
-          </span>
           <div style={{ lineHeight: 1.1 }}>
             <div className="mlabel" style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '.02em', color: colors.textHi }}>
               {active.label}

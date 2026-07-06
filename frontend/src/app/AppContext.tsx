@@ -49,8 +49,12 @@ interface AppContextValue {
   selectComp: (key: CompKey) => void;
   closeMenu: () => void;
   setScreenView: (v: ScreenView) => void;
+  /** Esc step-back: pop to the previous Display-panel tab. */
+  tabBack: () => void;
   toggleAutoRotate: () => void;
   toggleExplode: () => void;
+  /** Toggle whether non-focused components fade (ghost) or hide entirely. */
+  toggleFadeOthers: () => void;
   /** localhost-2 two-stage: collapse the two racks to the single main rack. */
   collapseRack: () => void;
   /** localhost-2 two-stage: return from the single rack to the two-rack view. */
@@ -204,12 +208,14 @@ export function AppProvider({
         dispatch({ type: 'SET_AUTO_ROTATE', value: userAutoRotateRef.current });
       },
       setScreenView: (v) => dispatch({ type: 'SET_SCREEN_VIEW', view: v }),
+      tabBack: () => dispatch({ type: 'TAB_BACK' }),
       toggleAutoRotate: () => {
         const next = !state.autoRotate;
         userAutoRotateRef.current = next;
         dispatch({ type: 'SET_AUTO_ROTATE', value: next });
       },
       toggleExplode: () => dispatch({ type: 'SET_EXPLODED', value: !state.exploded }),
+      toggleFadeOthers: () => dispatch({ type: 'SET_FADE_OTHERS', value: !state.fadeOthers }),
       collapseRack: () => dispatch({ type: 'COLLAPSE_RACK' }),
       expandRacks: () => dispatch({ type: 'EXPAND_RACKS' }),
     };

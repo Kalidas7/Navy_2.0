@@ -13,8 +13,9 @@ import type { ReactNode } from 'react';
 import { useApp } from '@/app/AppContext';
 import { useGraphValues } from '@/hooks/useGraphValues';
 import type { MarkerPosition } from '@/three/SceneController';
+import { TopBar } from '@/components/common/TopBar';
 import { AmbientOverlays } from '../components/AmbientOverlays';
-import { DetailTopBar } from '../components/DetailTopBar';
+import { ServerNameCard } from '../components/ServerNameCard';
 import { Hotspots } from '../components/Hotspots';
 import { TelemetryDock } from '../components/TelemetryDock';
 import { LoadingOverlay, ErrorOverlay } from '../components/SceneOverlays';
@@ -41,7 +42,10 @@ export function DetailShell({ markers, g, live, status, offline, children }: Det
           empty list in the two-rack stage, so no markers show there. */}
       <Hotspots markers={markers} />
 
-      <DetailTopBar />
+      {/* Shared header (same component as the Home screen) + the active rack's
+          identity in a floating card below it. */}
+      <TopBar variant="detail" />
+      <ServerNameCard />
 
       {/* View-specific chrome (toolbar variant, hint, close button, rail). */}
       {children}

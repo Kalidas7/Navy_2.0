@@ -43,18 +43,37 @@ export function BatteryGauge({ percent, charging = false, offline = false, note 
             alignItems: 'center',
           }}
         >
-          {/* fill */}
+          {/* fill — while charging, clip a sheen sweep to the filled portion so a
+              soft highlight glides across it (see .rk-charge-sheen). */}
           <div
             style={{
+              position: 'relative',
               height: '100%',
               width: offline ? '0%' : `${p}%`,
               background: `linear-gradient(90deg, ${col}cc, ${col})`,
               transition: 'width .35s ease, background .3s',
+              overflow: 'hidden',
             }}
-          />
-          {/* charging bolt, centred over the cell */}
+          >
+            {!offline && charging && (
+              <div
+                className="rk-charge-sheen"
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  // Narrow, soft white band; the keyframe sweeps it left→right.
+                  background:
+                    'linear-gradient(100deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%)',
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+          </div>
+          {/* charging bolt, centred over the cell (gently breathes while charging) */}
           {!offline && charging && (
             <span
+              className="rk-charge-bolt"
               style={{
                 position: 'absolute',
                 left: '50%',

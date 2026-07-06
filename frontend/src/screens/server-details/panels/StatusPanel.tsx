@@ -79,7 +79,6 @@ export function StatusPanel() {
                 cursor: expandable ? 'pointer' : 'default',
               }}
             >
-              <span style={{ width: 9, height: 9, borderRadius: '50%', background: s.color }} />
               <span className="mlabel" style={{ fontSize: 13, fontWeight: 600, color: colors.textBody, flex: 1 }}>
                 {s.name}
               </span>

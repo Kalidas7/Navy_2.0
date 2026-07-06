@@ -60,11 +60,17 @@ export function useScene(hostRef: React.RefObject<HTMLDivElement | null>) {
   }, [state.exploded]);
 
   // Click-to-focus: forward the selected hotspot to the controller so the
-  // data-center rack brightens the mapped mesh and fades the rest. The
-  // controller no-ops for the default rack, so localhost-1 is never dimmed.
+  // data-center rack shows only the mapped mesh (or fades the rest when the
+  // ghost toggle is on). The controller no-ops for the default rack, so
+  // localhost-1 is never dimmed. Also zoom the camera to frame the selected
+  // component head-on (null returns to the default framing), holding the rack
+  // still while focused. Push the fade flag BEFORE setFocus so the focus render
+  // reads the correct hide-vs-fade intent (both change together on a new click).
   useEffect(() => {
+    controllerRef.current?.setFadeOthers(state.fadeOthers);
     controllerRef.current?.setFocus(state.selectedComp);
-  }, [state.selectedComp, model.url]);
+    controllerRef.current?.focusZoom(state.selectedComp);
+  }, [state.selectedComp, state.fadeOthers, model.url]);
 
   // Two-stage collapse: forward the collapsed flag so the datacenter rack shows
   // both racks (Stage 1) or the single centered rack (Stage 2). No-op elsewhere.

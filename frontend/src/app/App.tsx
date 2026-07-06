@@ -15,6 +15,7 @@ import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { useApp } from './AppContext';
 import { routes } from './routes';
 import { useScene } from '@/three/useScene';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { SceneCanvas } from '@/components/layout/SceneCanvas';
 import { FleetView } from '@/screens/home';
 import { DetailView, type DetailViewProps } from '@/screens/server-details';
@@ -49,6 +50,7 @@ function RouteSync({
 export function App() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const { markers } = useScene(canvasRef);
+  useKeyboardShortcuts();
 
   return (
     <div className="rk-app">

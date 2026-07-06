@@ -136,6 +136,45 @@ button {
   }
 }
 
+/* Battery charging animation (BatteryGauge, when plugged in). Subtle: a soft
+   white sheen glides across the fill left→right on a slow loop, and the ⚡ bolt
+   breathes gently — enough to read as "live / charging" without distraction. */
+@keyframes rkchargeSheen {
+  /* Sweep a narrow highlight from off the left edge to off the right edge. The
+     wrapper clips it (overflow hidden), so only the pass across the fill shows. */
+  0% {
+    transform: translateX(-140%);
+  }
+  100% {
+    transform: translateX(140%);
+  }
+}
+@keyframes rkchargeBolt {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.rk-charge-sheen {
+  animation: rkchargeSheen 1.9s ease-in-out infinite;
+}
+.rk-charge-bolt {
+  animation: rkchargeBolt 1.9s ease-in-out infinite;
+}
+/* Respect reduced-motion: hold both cues static (no sweep, steady bolt). */
+@media (prefers-reduced-motion: reduce) {
+  .rk-charge-sheen {
+    animation: none;
+    opacity: 0;
+  }
+  .rk-charge-bolt {
+    animation: none;
+  }
+}
+
 /* Hover affordances that inline styles can't express.
    data-rk-hover lets components opt into the prototype hover treatments. */
 [data-rk-hover='card']:hover {

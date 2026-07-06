@@ -13,8 +13,8 @@ import {
   selectFilterChips,
   selectVesselStats,
 } from '@/app/selectors';
-import { FleetHeader } from './components/FleetHeader';
-import { FleetToolbar } from './components/FleetToolbar';
+import { TopBar } from '@/components/common/TopBar';
+import { FleetViewToggle } from './components/FleetViewToggle';
 import { RackCard } from './components/RackCard';
 import { RackRow } from './components/RackRow';
 import { RosterSidebar } from './components/RosterSidebar';
@@ -30,10 +30,9 @@ export function FleetView() {
 
   return (
     <div data-screen-label="Home" className={styles.screen}>
+      <TopBar variant="home" chips={chips} />
       <div className={styles.content}>
-        <FleetHeader />
-        <FleetToolbar chips={chips} />
-
+        <FleetViewToggle />
         {state.homeStyle === 'A' && (
           <div className={styles.grid}>
             {servers.map((s) => (

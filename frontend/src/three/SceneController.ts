@@ -30,6 +30,12 @@ export interface MarkerPosition {
   y: number;
   /** false when the point is behind the camera (marker should fade out) */
   visible: boolean;
+  /**
+   * Reveal opacity 0→1, ramped by the controller while the collapse fly-in plays
+   * so hotspots fade in DURING the motion (not popped after). 1 at rest. Combined
+   * with `visible` (behind-camera) by the React marker.
+   */
+  reveal: number;
 }
 
 export interface SceneCallbacks {
@@ -81,6 +87,12 @@ export class SceneController {
 
   /** Currently focused hotspot (datacenter click-to-focus), or null. */
   private focusKey: CompKey | null = null;
+  /**
+   * How the OTHER meshes behave while one component is focused. false (default)
+   * = hidden entirely (only the focused component shows). true = kept visible
+   * but faded translucent (the old ghost view). Toggled from the toolbar.
+   */
+  private fadeOthers = false;
 
   /** The main rack group and (datacenter only) its side-by-side twin group. */
   private rootGroup: THREE.Object3D | null = null;
@@ -108,6 +120,21 @@ export class SceneController {
   private camTo = new THREE.Vector3();
   private targetFrom = new THREE.Vector3();
   private targetTo = new THREE.Vector3();
+
+  /**
+   * Rack-collapse slide (Stage 1 → Stage 2). Runs alongside the camera tween:
+   * the main rack slides from its side offset to center (x: mainOffsetX → 0) and
+   * the twin fades out, instead of snapping. Progress 0→1 shared with the camera
+   * tween so the whole motion reads as one continuous move. `collapseActive`
+   * gates it; when it finishes the twin is hidden outright.
+   */
+  private collapseActive = false;
+  private collapseFromX = 0;
+  /**
+   * Hotspots begin fading in once the collapse tween crosses this fraction, so
+   * they appear WHILE the camera is still moving in (not popped after it lands).
+   */
+  private static readonly HOTSPOT_REVEAL_AT = 0.45;
 
   private autoRotate: boolean;
 
@@ -338,8 +365,9 @@ export class SceneController {
 
         this.loaded = true;
         this.explodeCur = 0;
-        // Apply any focus that was requested before the model finished loading.
+        // Apply any focus / zoom requested before the model finished loading.
         if (this.focusKey) this.applyFocus();
+        if (this.zoomKey) this.focusZoom(this.zoomKey);
         this.cb.onLoaded();
       },
       (p) => {
@@ -370,14 +398,18 @@ export class SceneController {
 
     // Camera zoom-in tween (datacenter collapse). Runs with OrbitControls paused;
     // on completion, hand control back so the user can orbit the single rack.
+    // The rack-collapse slide (main rack → center, twin fade) rides the SAME
+    // progress `e`, so camera fly-in and rack slide are one coordinated motion.
     if (this.camAnimActive) {
       this.camAnimT = Math.min(1, this.camAnimT + 0.045);
       const e = this.easeInOut(this.camAnimT);
       this.camera.position.lerpVectors(this.camFrom, this.camTo, e);
       this.controls.target.lerpVectors(this.targetFrom, this.targetTo, e);
+      if (this.collapseActive) this.updateCollapseSlide(e);
       if (this.camAnimT >= 1) {
         this.camAnimActive = false;
         this.controls.enabled = true;
+        if (this.collapseActive) this.finishCollapseSlide();
       }
     }
     this.controls.update();
@@ -399,6 +431,17 @@ export class SceneController {
     return t * t * (3 - 2 * t);
   }
 
+  /**
+   * Map collapse-tween progress `t` (0→1) to a hotspot reveal opacity: 0 until
+   * HOTSPOT_REVEAL_AT, then smooth 0→1 over the remainder. Lets hotspots fade in
+   * during the tail of the fly-in.
+   */
+  private rampReveal(t: number): number {
+    const start = SceneController.HOTSPOT_REVEAL_AT;
+    if (t <= start) return 0;
+    return this.easeInOut(Math.min(1, (t - start) / (1 - start)));
+  }
+
   private projectMarkers(): void {
     // Stage 1 (two racks, not collapsed): suppress all hotspots so no buttons
     // show until a rack is clicked.
@@ -406,6 +449,12 @@ export class SceneController {
       this.cb.onMarkers([]);
       return;
     }
+    // Reveal ramp: during the collapse fly-in, hotspots fade in from HOTSPOT_
+    // REVEAL_AT → 1 of the motion, so they appear WHILE the camera is moving into
+    // the clicked rack (not popped after it lands). 1 (fully shown) at rest.
+    const reveal = this.collapseActive
+      ? this.rampReveal(this.camAnimT)
+      : 1;
     const w = this.host.clientWidth;
     const h = this.host.clientHeight;
     const positions: MarkerPosition[] = this.hotspots.map((m) => {
@@ -413,7 +462,7 @@ export class SceneController {
       const behind = p.z > 1;
       const x = (p.x * 0.5 + 0.5) * w;
       const y = (-p.y * 0.5 + 0.5) * h;
-      return { key: m.key, x, y, visible: !behind };
+      return { key: m.key, x, y, visible: !behind, reveal };
     });
     this.cb.onMarkers(positions);
   }
@@ -421,7 +470,9 @@ export class SceneController {
   // ---------- external control ----------
   setAutoRotate(value: boolean): void {
     this.autoRotate = value;
-    if (this.controls) this.controls.autoRotate = value;
+    // While a component is zoomed-in we hold the rack still so it stays centered;
+    // remember the user's choice but don't spin until zoom clears.
+    if (this.controls) this.controls.autoRotate = this.zoomKey ? false : value;
   }
 
   setExploded(value: boolean): void {
@@ -431,12 +482,16 @@ export class SceneController {
     for (const m of this.meshes) {
       if (DATACENTER_HIDE_ON_EXPLODE.includes(m.name)) m.mesh.visible = !value;
     }
+    // Focus visibility is authoritative: if a component is focused, re-apply it
+    // so toggling explode doesn't un-hide meshes the focus meant to hide.
+    if (this.loaded && this.focusKey) this.applyFocus();
   }
 
   /**
    * Click-to-focus. When `key` is a hotspot whose mapped mesh exists, that mesh
-   * stays full-bright and every OTHER mesh drops to a translucent 0.15 opacity so
-   * the focused part reads clearly. `null` restores every mesh to its baseline.
+   * stays full-bright and every OTHER mesh is HIDDEN (or, when fadeOthers is on,
+   * dropped to a translucent 0.15 ghost). `null` restores every mesh to its
+   * baseline (visible + baseline opacity).
    */
   setFocus(key: CompKey | null): void {
     this.focusKey = key;
@@ -444,25 +499,124 @@ export class SceneController {
     this.applyFocus();
   }
 
+  /**
+   * Toggle how the non-focused meshes behave while one component is focused:
+   * false = hidden (only the focused component shows), true = faded ghost. Re-
+   * applies the current focus so the change is immediate.
+   */
+  setFadeOthers(value: boolean): void {
+    this.fadeOthers = value;
+    if (!this.loaded) return;
+    this.applyFocus();
+  }
+
+  /**
+   * Click-to-zoom. Tweens the camera to frame one component (`key`) head-on —
+   * approaching from the DIRECTION THE COMPONENT FACES (outward from the rack
+   * toward that component's front face), NOT from the current orbit angle. So
+   * clicking a component always flies the camera to look at it straight on.
+   * `null` returns to the default resting framing.
+   *
+   * Reuses the camera-tween machinery (camFrom→camTo / targetFrom→targetTo,
+   * driven in loop()). Auto-rotate is paused while zoomed so the component stays
+   * centered; the pause is lifted when zoom clears (unless a real setAutoRotate
+   * call turned it on again meanwhile — see setAutoRotate).
+   */
+  private zoomKey: CompKey | null = null;
+  /** Distance from the component when zoomed in (world units). */
+  private static readonly ZOOM_DISTANCE = 3.6;
+
+  focusZoom(key: CompKey | null): void {
+    this.zoomKey = key;
+    if (!this.loaded) return;
+
+    const endTarget = new THREE.Vector3();
+    const endPos = new THREE.Vector3();
+
+    if (key) {
+      // Target the ACTUAL highlighted mesh (the one applyFocus brightens), NOT
+      // the hotspot label anchor — the two live at different spots on the model,
+      // so zooming to the hotspot would frame empty rack while a blade elsewhere
+      // lit up. Fall back to the hotspot position only when there's no mapped
+      // mesh (e.g. the default rack, which has no DATACENTER_PART_BY_COMP entry).
+      const focusPoint = this.componentWorldCenter(key);
+      // Approach the component HEAD-ON from the front. The rack front faces +z,
+      // so the camera sits straight in front of the focused mesh (same x/y as the
+      // mesh center, pushed out along +z) and looks directly at it — not from the
+      // component's side. This keeps every focused component framed dead-center,
+      // face-on, regardless of how far left/right its blade sits on the rack. A
+      // small +y keeps the natural slight downward tilt of the default framing.
+      const dir = new THREE.Vector3(0, 0.32, 1).normalize();
+      endTarget.copy(focusPoint);
+      endPos.copy(focusPoint).add(dir.multiplyScalar(SceneController.ZOOM_DISTANCE));
+      // Hold still while framed so the component stays centered.
+      this.controls.autoRotate = false;
+    } else {
+      // Return to the default resting pose.
+      endTarget.set(...SCENE.controls.target);
+      endPos.set(...SCENE.camera.position);
+      // Restore auto-rotate to the user's setting.
+      this.controls.autoRotate = this.autoRotate;
+    }
+
+    this.camFrom.copy(this.camera.position);
+    this.camTo.copy(endPos);
+    this.targetFrom.copy(this.controls.target);
+    this.targetTo.copy(endTarget);
+    this.camAnimT = 0;
+    this.camAnimActive = true;
+    this.controls.enabled = false;
+  }
+
+  /**
+   * World-space center of the component the given hotspot maps to — the SAME
+   * mesh applyFocus() brightens (DATACENTER_PART_BY_COMP[key]). Uses the mesh's
+   * current world bounding box, so it tracks the explode offset too. Falls back
+   * to the authored hotspot position when no mesh is mapped/found (default rack).
+   */
+  private componentWorldCenter(key: CompKey): THREE.Vector3 {
+    const targetName = DATACENTER_PART_BY_COMP[key];
+    if (targetName) {
+      const state = this.meshes.find((m) => m.name === targetName);
+      if (state) {
+        const center = new THREE.Vector3();
+        new THREE.Box3().setFromObject(state.mesh).getCenter(center);
+        return center;
+      }
+    }
+    const hot = this.hotspots.find((h) => h.key === key);
+    return hot ? hot.v.clone() : new THREE.Vector3(...SCENE.controls.target);
+  }
+
   private applyFocus(): void {
     const DIM = 0.15;
     const targetName = this.focusKey ? DATACENTER_PART_BY_COMP[this.focusKey] : undefined;
+    // While exploded, the structural shell meshes stay hidden regardless of
+    // focus — restoring baseline visibility must respect that, not un-hide them.
+    const exploded = this.explodeTarget > 0;
     for (const m of this.meshes) {
       const mat = m.mesh as unknown as { material?: THREE.MeshStandardMaterial };
       const material = mat.material;
       if (!material) continue;
       if (!targetName) {
-        // Restore baseline.
+        // No focus: restore baseline opacity + visibility. The only meshes that
+        // stay hidden here are the shell meshes while the view is exploded.
         material.transparent = m.baseTransparent;
         material.opacity = m.baseOpacity;
+        m.mesh.visible = exploded ? !DATACENTER_HIDE_ON_EXPLODE.includes(m.name) : true;
       } else if (m.name === targetName) {
-        // Focused mesh: full bright.
+        // Focused mesh: full bright and always visible.
         material.transparent = m.baseTransparent;
         material.opacity = m.baseOpacity;
-      } else {
-        // Everything else: translucent.
+        m.mesh.visible = true;
+      } else if (this.fadeOthers) {
+        // Ghost view: keep visible but translucent (unless hidden by explode).
         material.transparent = true;
         material.opacity = DIM;
+        m.mesh.visible = exploded ? !DATACENTER_HIDE_ON_EXPLODE.includes(m.name) : true;
+      } else {
+        // Default: hide every non-focused mesh so only the focused one shows.
+        m.mesh.visible = false;
       }
       material.needsUpdate = true;
     }
@@ -489,16 +643,93 @@ export class SceneController {
   }
 
   /**
+   * Per-frame collapse slide, driven by the eased camera-tween progress `e`
+   * (0→1). Slides the main rack from its side offset to center and fades the twin
+   * from opaque to transparent, so the two racks resolve into one WITHOUT a snap.
+   */
+  private updateCollapseSlide(e: number): void {
+    if (this.rootGroup) {
+      this.rootGroup.position.x = this.collapseFromX * (1 - e);
+      this.rootGroup.updateMatrixWorld(true);
+    }
+    // Twin fades out over the first ~70% of the motion, then is hidden outright in
+    // finishCollapseSlide. Fading (not an instant hide) removes the second "cut".
+    if (this.twinGroup) {
+      const fade = Math.max(0, 1 - e / 0.7);
+      this.setTwinOpacity(fade);
+    }
+  }
+
+  /** Land the collapse: rack exactly centered, twin hidden, layout authoritative. */
+  private finishCollapseSlide(): void {
+    this.collapseActive = false;
+    this.restoreTwinOpacity();
+    this.applyRackLayout();
+  }
+
+  /**
+   * Set the twin's opacity for the collapse fade. The twin SHARES the main rack's
+   * materials (see loadModel), so we must not lower opacity on those directly —
+   * it would fade the main rack too. Instead, the first fade frame swaps each twin
+   * mesh onto its OWN transparent material clone, remembering the shared original
+   * so restoreTwinOpacity can put it back. Lazy, so the shared materials stay
+   * shared for the whole two-rack stage (halved GPU footprint) until a fade runs.
+   */
+  private twinFadeEntries: { mesh: THREE.Mesh; original: THREE.Material | THREE.Material[]; clones: THREE.Material[] }[] | null = null;
+  private setTwinOpacity(opacity: number): void {
+    if (!this.twinGroup) return;
+    if (!this.twinFadeEntries) {
+      const entries: { mesh: THREE.Mesh; original: THREE.Material | THREE.Material[]; clones: THREE.Material[] }[] = [];
+      this.twinGroup.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        if (!mesh.isMesh || !mesh.material) return;
+        const isArr = Array.isArray(mesh.material);
+        const mats = (isArr ? mesh.material : [mesh.material]) as THREE.Material[];
+        const clones = mats.map((m) => {
+          const c = m.clone();
+          c.transparent = true;
+          return c;
+        });
+        entries.push({ mesh, original: mesh.material, clones });
+        mesh.material = isArr ? clones : clones[0];
+      });
+      this.twinFadeEntries = entries;
+    }
+    for (const e of this.twinFadeEntries) for (const c of e.clones) c.opacity = opacity;
+  }
+
+  /**
+   * Undo the fade: restore each twin mesh's shared original material and dispose
+   * the temporary clones so they don't leak. Safe to call when no fade is active.
+   * The twin returns to sharing the main rack's materials for any later re-fade.
+   */
+  private restoreTwinOpacity(): void {
+    if (!this.twinFadeEntries) return;
+    for (const e of this.twinFadeEntries) {
+      e.mesh.material = e.original;
+      for (const c of e.clones) c.dispose();
+    }
+    this.twinFadeEntries = null;
+  }
+
+  /**
    * Two-stage view control. `true` collapses to the single centered main rack
    * (+ hotspots); `false` shows both racks side by side (no hotspots).
    */
   setCollapsed(value: boolean): void {
     this.collapsed = value;
+    // Collapsing WITH an armed slide (a rack was clicked): don't snap the layout —
+    // the loop drives the main rack from its offset to center and fades the twin
+    // out over the same clock as the camera fly-in. applyRackLayout would jump the
+    // rack to x=0 instantly (the "cut"), so skip it and let the tween land it.
+    if (value && this.collapseActive) return;
     this.applyRackLayout();
-    // Expanding back to two racks: cancel any in-flight zoom tween, restore
-    // orbit control, and clear focus dimming.
+    // Expanding back to two racks: cancel any in-flight zoom/slide tween, restore
+    // orbit control, twin opacity, and clear focus dimming.
     if (!value) {
       this.camAnimActive = false;
+      this.collapseActive = false;
+      this.restoreTwinOpacity();
       if (this.controls) this.controls.enabled = true;
       this.focusKey = null;
       if (this.loaded) this.applyFocus();
@@ -517,36 +748,66 @@ export class SceneController {
     this.pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     this.pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     this.raycaster.setFromCamera(this.pointer, this.camera);
-    const targets: THREE.Object3D[] = [];
-    if (this.rootGroup) targets.push(this.rootGroup);
-    if (this.twinGroup) targets.push(this.twinGroup);
-    const hits = this.raycaster.intersectObjects(targets, true);
-    if (hits.length === 0) return;
-    this.startZoomIn();
+    // Raycast each rack separately so we know WHICH one was clicked — the camera
+    // then flies toward that rack as it slides to center.
+    const rootHit = this.rootGroup
+      ? this.raycaster.intersectObject(this.rootGroup, true).length > 0
+      : false;
+    const twinHit = this.twinGroup
+      ? this.raycaster.intersectObject(this.twinGroup, true).length > 0
+      : false;
+    if (!rootHit && !twinHit) return;
+    // The clicked rack's current x offset (main = mainOffsetX, twin = twinOffsetX).
+    // rootGroup's own hit wins ties (it's the survivor either way); the offset
+    // just decides which slot the surviving rack flies in FROM.
+    const clickedOffsetX = rootHit ? this.mainOffsetX : this.twinOffsetX;
+    this.startZoomIn(clickedOffsetX);
     this.cb.onRackClick?.();
   }
 
   /**
-   * Begin the PURELY-VISUAL fly-in for the single-rack view. The animation ENDS
-   * at the exact default resting pose (SCENE.camera.position looking at
-   * SCENE.controls.target) — i.e. the same framing the single rack always had,
-   * so there is NO net zoom / no lasting effect on the view. It merely STARTS a
-   * bit pulled back and glides forward, as a transition flourish. Driven
-   * per-frame in loop(); OrbitControls is paused while it runs.
+   * Begin the fly-in for the single-rack view, heading TOWARD the clicked rack.
+   *
+   * The animation ENDS at the exact default resting pose (SCENE.camera.position
+   * looking at SCENE.controls.target) — the camera angle/framing the single rack
+   * always had is kept unchanged, per the requested behaviour. What differs is
+   * where the motion STARTS: pulled back AND shifted toward the clicked rack
+   * (its x offset), so the camera visibly moves/zooms into the server that was
+   * clicked before settling into the standard centered framing.
+   *
+   * Runs in lockstep with the rack-collapse slide (armed here): as the camera
+   * flies in, the main rack slides from its side offset to center and the twin
+   * fades out, and hotspots begin fading in partway through — one continuous
+   * move with no snap/cut. Driven per-frame in loop(); OrbitControls is paused
+   * while it runs.
    */
-  private startZoomIn(): void {
+  private startZoomIn(clickedOffsetX = 0): void {
     const endTarget = new THREE.Vector3(...SCENE.controls.target);
     const endPos = new THREE.Vector3(...SCENE.camera.position);
-    // Start pulled ~35% further out along the same view direction; settle to the
-    // canonical resting pose so the end state matches the pre-transition view.
-    const back = endPos.clone().sub(endTarget).multiplyScalar(1.35).add(endTarget);
-    this.camFrom.copy(back);
+    // Start EXACTLY from the camera's live pose at click time — no synthetic
+    // pulled-back start. Jumping to a computed start pose on frame 1 is what read
+    // as a cut; capturing the current position/target makes the tween glide
+    // continuously from where the user was to the resting single-rack framing.
+    this.camFrom.copy(this.camera.position);
     this.camTo.copy(endPos);
-    this.targetFrom.copy(endTarget);
+    this.targetFrom.copy(this.controls.target);
     this.targetTo.copy(endTarget);
     this.camAnimT = 0;
     this.camAnimActive = true;
     this.controls.enabled = false;
+
+    // Arm the rack-collapse slide. The SURVIVING rack (rootGroup — it carries the
+    // hotspots/focus/orbit) is snapped to the CLICKED rack's slot, then slides
+    // from there to center; the other rack fades out. Because both racks are
+    // pixel-identical and the one being faded is still fully opaque at this
+    // instant, snapping rootGroup behind it is invisible — so it reads as "the
+    // rack you clicked stayed and moved to center; the other disappeared".
+    this.collapseActive = true;
+    this.collapseFromX = clickedOffsetX;
+    if (this.rootGroup) {
+      this.rootGroup.position.x = clickedOffsetX;
+      this.rootGroup.updateMatrixWorld(true);
+    }
   }
 
   isLoaded(): boolean {

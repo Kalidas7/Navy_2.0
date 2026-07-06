@@ -41,6 +41,8 @@ export interface CompDef {
   glyph: string;
   /** world-space hotspot position tuned to the normalized rack footprint */
   pos: [number, number, number];
+  /** which side of the model the marker + label sit on (default 'right') */
+  side?: 'left' | 'right';
 }
 
 export interface DriveBay {

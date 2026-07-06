@@ -42,9 +42,6 @@ export function DrivesPanel() {
             background: colors.iconTileGradient,
           }}
         >
-          <span
-            style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }}
-          />
           <span className="mono" style={{ fontSize: 11, color: colors.textBody, width: 54 }}>
             {d.id}
           </span>
