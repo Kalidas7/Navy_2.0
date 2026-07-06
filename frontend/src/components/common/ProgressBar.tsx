@@ -12,7 +12,7 @@ export function ProgressBar({
   pct,
   fill,
   height = 5,
-  track = '#0f1d24',
+  track = '#e2e5ea',
   marginTop = 0,
 }: ProgressBarProps) {
   return (

@@ -5,11 +5,11 @@ import type { LogEntry } from '@/types';
 export function LogsView({ logs }: { logs: LogEntry[] }) {
   return (
     <>
-      <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 8 }}>
+      <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 8 }}>
         MISSION / SYSTEM LOG
       </div>
       {logs.map((l) => (
-        <div key={l.id} style={{ display: 'flex', gap: 9, padding: '5px 0', borderBottom: '1px solid #0e1b21' }}>
+        <div key={l.id} style={{ display: 'flex', gap: 9, padding: '5px 0', borderBottom: `1px solid ${colors.borderCard}` }}>
           <span className="mono" style={{ fontSize: 10, color: colors.textMuted2, width: 52, flexShrink: 0 }}>
             {l.t}
           </span>
@@ -19,7 +19,7 @@ export function LogsView({ logs }: { logs: LogEntry[] }) {
           >
             {l.lvl}
           </span>
-          <span className="mono" style={{ fontSize: 11, color: '#b6d2c8' }}>
+          <span className="mono" style={{ fontSize: 11, color: colors.textMid }}>
             {l.msg}
           </span>
         </div>

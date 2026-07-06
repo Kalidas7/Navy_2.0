@@ -16,16 +16,17 @@ export function RackSelectHint() {
         display: 'flex',
         alignItems: 'center',
         gap: 10,
-        padding: '9px 16px',
+        padding: '9px 18px',
+        borderRadius: 999,
         border: `1px solid ${colors.borderInput}`,
-        background: 'rgba(8,14,18,.82)',
-        backdropFilter: 'blur(4px)',
+        background: colors.panelBg,
+        boxShadow: '0 4px 14px rgba(16,24,40,.08)',
         zIndex: 5,
         animation: 'rkfade .4s ease',
       }}
     >
       <span style={{ color: colors.accent, fontSize: 15, animation: 'rkblink 2s infinite' }}>◉</span>
-      <span className="mono" style={{ fontSize: 12, color: '#8fb3a6', letterSpacing: '.08em' }}>
+      <span className="mono" style={{ fontSize: 12, color: colors.textMid2, letterSpacing: '.08em' }}>
         CLICK A SERVER TO INSPECT
       </span>
     </div>

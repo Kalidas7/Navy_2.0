@@ -6,7 +6,7 @@
  * own memo boundary (see RackCardStatic) rather than passing it as `children`.
  */
 import { memo, type ReactNode } from 'react';
-import { colors } from '@/config/tokens';
+import { colors, radii, shadows } from '@/config/tokens';
 
 interface CardProps {
   children: ReactNode;
@@ -19,6 +19,8 @@ interface CardProps {
   background?: string;
   borderColor?: string;
   accentWidth?: number;
+  radius?: number;
+  shadow?: string;
 }
 
 export const Card = memo(function Card({
@@ -30,6 +32,8 @@ export const Card = memo(function Card({
   background = colors.cardGradient,
   borderColor = colors.borderCard,
   accentWidth = 3,
+  radius = radii.card,
+  shadow = shadows.card,
 }: CardProps) {
   return (
     <div
@@ -38,8 +42,10 @@ export const Card = memo(function Card({
       style={{
         position: 'relative',
         border: `1px solid ${borderColor}`,
+        borderRadius: radius,
         background,
         padding,
+        boxShadow: shadow,
         cursor: onClick ? 'pointer' : 'default',
         transition: 'transform .15s,border-color .15s,box-shadow .15s',
         overflow: 'hidden',

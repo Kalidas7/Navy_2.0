@@ -6,9 +6,9 @@
    ============================================================ */
 
 :root {
-  --rk-base-bg: #06090b;
-  --rk-text-body: #cfe7dd;
-  --rk-accent: #2bf0a0;
+  --rk-base-bg: #f5f6f8;
+  --rk-text-body: #1a1f26;
+  --rk-accent: #2563eb;
 }
 
 * {
@@ -22,7 +22,7 @@ body {
   height: 100%;
   background: var(--rk-base-bg);
   color: var(--rk-text-body);
-  font-family: 'Saira', system-ui, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -37,31 +37,41 @@ body {
 }
 
 .mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+/* Big numeric values (card readouts, stat values, RPM, IDs) — the handoff uses
+   monospace for ALL metric values, so .cond (the old condensed-value class)
+   now maps to the mono stack. */
 .cond {
-  font-family: 'Saira Condensed', sans-serif;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-/* Square scrollbars to match the hard-edged aesthetic */
+/* Micro-labels / section headers / captions — sans UI font per the handoff
+   (monospace is reserved for values only). Applied where a .mono label was
+   really a text label, not a number. */
+.mlabel {
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+}
+
+/* Light-theme scrollbars */
 ::-webkit-scrollbar {
   width: 9px;
   height: 9px;
 }
 ::-webkit-scrollbar-track {
-  background: #080d10;
+  background: #f4f6f8;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1a2a33;
-  border-radius: 0;
+  background: #d5dae1;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #27424f;
+  background: #c2cad4;
 }
 
 input {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
 }
 
 button {
@@ -85,24 +95,24 @@ button {
 }
 @keyframes rkpulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 90, 90, 0.5);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(255, 90, 90, 0);
+    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 90, 90, 0);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
   }
 }
 @keyframes rkpulseW {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 184, 77, 0.5);
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4);
   }
   70% {
-    box-shadow: 0 0 0 9px rgba(255, 184, 77, 0);
+    box-shadow: 0 0 0 9px rgba(217, 119, 6, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 184, 77, 0);
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
   }
 }
 @keyframes rkfade {
@@ -129,21 +139,21 @@ button {
 /* Hover affordances that inline styles can't express.
    data-rk-hover lets components opt into the prototype hover treatments. */
 [data-rk-hover='card']:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.1);
 }
 [data-rk-hover='row']:hover {
-  border-color: #2bf0a0 !important;
+  border-color: #2563eb !important;
   transform: translateX(3px);
 }
 [data-rk-hover='accent']:hover {
-  border-color: #2bf0a0 !important;
+  border-color: #2563eb !important;
 }
 [data-rk-hover='back']:hover {
-  border-color: #2bf0a0 !important;
-  color: #2bf0a0 !important;
+  border-color: #2563eb !important;
+  color: #2563eb !important;
 }
 [data-rk-hover='close']:hover {
-  border-color: #ff5a5a !important;
-  color: #ff5a5a !important;
+  border-color: #dc2626 !important;
+  color: #dc2626 !important;
 }

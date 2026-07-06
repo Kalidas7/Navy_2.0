@@ -1,4 +1,4 @@
-/** Status pill: a glowing dot + label, coloured by status meta. */
+/** Status pill: a solid dot + label, coloured by status meta. */
 import type { StatusMeta } from '@/config/tokens';
 
 interface StatusPillProps {
@@ -15,7 +15,7 @@ interface StatusPillProps {
 export function StatusPill({
   meta,
   dot = 7,
-  glow = true,
+  glow = false,
   fontSize = 11,
   padding = '5px 11px',
   gap = 8,
@@ -28,6 +28,7 @@ export function StatusPill({
         alignItems: 'center',
         gap,
         padding,
+        borderRadius: 999,
         border: `1px solid ${meta.bd}`,
         background: meta.bg,
       }}
@@ -42,8 +43,8 @@ export function StatusPill({
         }}
       />
       <span
-        className="mono"
-        style={{ fontSize, letterSpacing, color: meta.color }}
+        className="mlabel"
+        style={{ fontSize, letterSpacing, fontWeight: 700, textTransform: 'uppercase', color: meta.color }}
       >
         {meta.label}
       </span>

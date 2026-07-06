@@ -26,6 +26,7 @@ export function FleetToolbar({ chips }: { chips: FilterChipVM[] }) {
           minWidth: 220,
           maxWidth: 380,
           padding: '9px 13px',
+          borderRadius: 8,
           border: `1px solid ${colors.borderInput}`,
           background: colors.panelBg,
         }}
@@ -34,15 +35,14 @@ export function FleetToolbar({ chips }: { chips: FilterChipVM[] }) {
         <input
           value={state.query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="SEARCH RACK · VESSEL · ROLE"
+          placeholder="Search rack · vessel · role…"
           style={{
             flex: 1,
             background: 'transparent',
             border: 'none',
             outline: 'none',
             color: colors.textBody,
-            fontSize: 12,
-            letterSpacing: '.06em',
+            fontSize: 13,
           }}
         />
       </div>

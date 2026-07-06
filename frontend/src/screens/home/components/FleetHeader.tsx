@@ -11,8 +11,8 @@ export function FleetHeader() {
     height: 34,
     display: 'grid',
     placeItems: 'center',
-    background: active ? 'rgba(43,240,160,.14)' : 'transparent',
-    color: active ? accent : '#6f8a82',
+    background: active ? 'rgba(37,99,235,.10)' : 'transparent',
+    color: active ? accent : colors.textMid,
     border: 'none',
     cursor: 'pointer',
     fontSize: 17,
@@ -52,7 +52,7 @@ export function FleetHeader() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-        <div className="mono" style={{ fontSize: 13, color: '#7fb8a6', letterSpacing: '.12em' }}>
+        <div className="mono" style={{ fontSize: 13, color: colors.textMid2, letterSpacing: '.08em' }}>
           {state.clock} IST
         </div>
         <div style={{ display: 'flex', border: `1px solid ${colors.borderInput}` }}>

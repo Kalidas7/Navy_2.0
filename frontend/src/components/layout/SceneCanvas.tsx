@@ -18,7 +18,7 @@ export const SceneCanvas = forwardRef<HTMLDivElement>(function SceneCanvas(_prop
         inset: 0,
         zIndex: 0,
         background:
-          'radial-gradient(120% 100% at 50% 18%, #0d1922 0%, #08111a 38%, #05080b 100%)',
+          'radial-gradient(90% 70% at 50% 40%, #ffffff 0%, #eef1f5 55%, #e6e9ee 100%)',
       }}
     />
   );

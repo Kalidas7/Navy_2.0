@@ -36,8 +36,8 @@ export function BatteryGauge({ percent, charging = false, offline = false, note 
             position: 'relative',
             flex: 1,
             height: 34,
-            border: `1.5px solid ${colors.borderInput}`,
-            background: '#0b151a',
+            border: `1.5px solid ${colors.borderIcon}`,
+            background: '#f4f6f8',
             padding: 3,
             display: 'flex',
             alignItems: 'center',
@@ -49,7 +49,6 @@ export function BatteryGauge({ percent, charging = false, offline = false, note 
               height: '100%',
               width: offline ? '0%' : `${p}%`,
               background: `linear-gradient(90deg, ${col}cc, ${col})`,
-              boxShadow: offline ? 'none' : `0 0 8px ${col}66`,
               transition: 'width .35s ease, background .3s',
             }}
           />
@@ -62,8 +61,8 @@ export function BatteryGauge({ percent, charging = false, offline = false, note 
                 top: '50%',
                 transform: 'translate(-50%,-50%)',
                 fontSize: 18,
-                color: '#eafff5',
-                textShadow: '0 0 6px rgba(0,0,0,.7)',
+                color: '#ffffff',
+                textShadow: '0 1px 2px rgba(16,24,40,.35)',
                 lineHeight: 1,
               }}
             >
@@ -80,7 +79,7 @@ export function BatteryGauge({ percent, charging = false, offline = false, note 
         </div>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-        <span className="mono" style={{ fontSize: 9, letterSpacing: '.12em', color: colors.textMuted }}>
+        <span className="mlabel" style={{ fontSize: 9, letterSpacing: '.12em', color: colors.textMuted }}>
           {charging && !offline ? 'AC · CHARGING' : 'ON BATTERY'}
         </span>
         {note && !offline && (

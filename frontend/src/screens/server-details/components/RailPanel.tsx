@@ -48,9 +48,11 @@ export function RailPanel() {
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          background: 'linear-gradient(180deg,rgba(10,17,22,.97),rgba(8,13,17,.97))',
-          border: `1px solid ${active.color}`,
-          boxShadow: '0 18px 60px rgba(0,0,0,.6),0 0 0 1px rgba(43,240,160,.04) inset',
+          background: colors.panelBg,
+          borderRadius: 12,
+          border: `1px solid ${colors.borderCard}`,
+          boxShadow: '0 8px 28px rgba(16,24,40,.12)',
+          overflow: 'hidden',
         }}
       >
         {/* header */}
@@ -70,6 +72,7 @@ export function RailPanel() {
               height: 34,
               display: 'grid',
               placeItems: 'center',
+              borderRadius: 8,
               border: `1px solid ${active.color}`,
               color: active.color,
               fontSize: 17,
@@ -78,10 +81,10 @@ export function RailPanel() {
             {active.glyph}
           </span>
           <div style={{ lineHeight: 1.1 }}>
-            <div className="cond" style={{ fontSize: 17, fontWeight: 700, letterSpacing: '.07em', color: colors.textHi }}>
+            <div className="mlabel" style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '.02em', color: colors.textHi }}>
               {active.label}
             </div>
-            <div className="mono" style={{ fontSize: 10, color: active.color, letterSpacing: '.12em' }}>
+            <div className="mlabel" style={{ fontSize: 10, color: active.color, letterSpacing: '.12em' }}>
               {active.stateLabel}
             </div>
           </div>
@@ -96,8 +99,9 @@ export function RailPanel() {
               display: 'grid',
               placeItems: 'center',
               background: 'transparent',
+              borderRadius: 6,
               border: `1px solid ${colors.borderInput}`,
-              color: '#7c9a90',
+              color: colors.textMid2,
               cursor: 'pointer',
               fontSize: 14,
             }}

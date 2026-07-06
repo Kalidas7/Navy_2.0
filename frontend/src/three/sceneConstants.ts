@@ -3,12 +3,18 @@
  * ("three.js scene") so the camera framing, lighting and tone mapping match.
  */
 export const SCENE = {
-  fogColor: 0x06090b,
-  fogNear: 16,
-  fogFar: 42,
-  envIntensity: 0.04,
+  // Light scene: fog matches the CSS backdrop (#e6e9ee-ish) so the dark rack
+  // fades into a light haze at distance, not a dark halo. Pushed farther out so
+  // the rack itself stays crisp.
+  fogColor: 0xe9ecf1,
+  fogNear: 22,
+  fogFar: 60,
+  // Brighter neutral image-based light so the dark charcoal rack reads with
+  // clean reflections against the bright background (was 0.04 for the dark scene).
+  envIntensity: 0.6,
 
-  toneMappingExposure: 1.08,
+  // Slightly lower exposure so metal highlights don't blow out on the bright bg.
+  toneMappingExposure: 1.0,
   maxPixelRatio: 2,
 
   camera: {
@@ -30,9 +36,10 @@ export const SCENE = {
   grid: {
     size: 60,
     divisions: 60,
-    colorCenter: 0x2f7fc4,
-    colorGrid: 0x123040,
-    opacity: 0.32,
+    // Neutral grey floor lines visible on a light background (were navy/dark).
+    colorCenter: 0x9aa3af,
+    colorGrid: 0xd5dae1,
+    opacity: 0.5,
   },
 
   /** per-mesh explode lerp factor applied each frame */
@@ -42,8 +49,12 @@ export const SCENE = {
 } as const;
 
 export const LIGHTS = {
-  hemisphere: { sky: 0x9fc6e6, ground: 0x05080a, intensity: 0.6 },
-  key: { color: 0xffffff, intensity: 1.5, position: [6, 11, 8] as [number, number, number] },
-  fill: { color: 0x88bbff, intensity: 0.5, position: [-8, 4, -3] as [number, number, number] },
-  rim: { color: 0x2bf0a0, intensity: 0.55, position: [-4, 5, -9] as [number, number, number] },
+  // Light-theme rig: bright neutral hemisphere with a light floor-bounce so the
+  // dark rack separates from the light scene; white key from upper-front; a
+  // near-white fill (was blue) and a subtle cool rim (was tactical green) so
+  // edges read against the bright background without a coloured cast.
+  hemisphere: { sky: 0xffffff, ground: 0xdfe3e9, intensity: 0.9 },
+  key: { color: 0xffffff, intensity: 1.6, position: [6, 11, 8] as [number, number, number] },
+  fill: { color: 0xf2f5f8, intensity: 0.6, position: [-8, 4, -3] as [number, number, number] },
+  rim: { color: 0xbcd0e6, intensity: 0.5, position: [-4, 5, -9] as [number, number, number] },
 } as const;

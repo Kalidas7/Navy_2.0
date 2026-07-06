@@ -86,12 +86,14 @@ def _fmt_uptime(seconds: float) -> str:
     return f"{m}m"
 
 
-# Palette mirrors the frontend tokens so real-component payloads match the UI.
-_GREEN = "#2bf0a0"
-_AMBER = "#ffb84d"
-_RED = "#ff5a5a"
-_BLUE = "#37c2ff"
-_STEEL = "#5b86a8"
+# Palette mirrors the frontend tokens (light theme) so real-component payloads
+# match the UI. Values track config/tokens.ts: status green/amber/red, the blue
+# accent, and the neutral standby steel.
+_GREEN = "#16a34a"
+_AMBER = "#d97706"
+_RED = "#dc2626"
+_BLUE = "#2563eb"
+_STEEL = "#64748b"
 
 
 def _health_color(pct: float, warn: float = 80, crit: float = 92) -> str:
@@ -362,7 +364,7 @@ _LOG_LEVEL_BY_PRIORITY = {
     0: "CRIT", 1: "CRIT", 2: "CRIT", 3: "CRIT",
     4: "WARN", 5: "INFO", 6: "INFO", 7: "INFO",
 }
-_LOG_COLORS = {"OK": _GREEN, "INFO": _STEEL, "WARN": _AMBER, "CRIT": _RED}
+_LOG_COLORS = {"OK": _GREEN, "INFO": "#3b82f6", "WARN": _AMBER, "CRIT": _RED}
 
 
 def _clock_from_epoch_us(us: int) -> str:

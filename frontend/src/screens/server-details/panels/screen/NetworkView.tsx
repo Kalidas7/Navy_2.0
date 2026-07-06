@@ -15,7 +15,7 @@ export function NetworkView({ g, offline = false }: { g: GraphValues; offline?: 
           color={colors.accent}
           valueSize={26}
           unit={unit}
-          unitColor="#3a6357"
+          unitColor="#9aa3af"
         />
         <StatCard
           label="▼ INGRESS"
@@ -23,29 +23,29 @@ export function NetworkView({ g, offline = false }: { g: GraphValues; offline?: 
           color={colors.blue}
           valueSize={26}
           unit={unit}
-          unitColor="#356077"
+          unitColor="#9aa3af"
         />
       </div>
 
-      <div style={{ border: `1px solid ${colors.borderInner}`, background: colors.panelBg, padding: 11, marginBottom: 11 }}>
-        <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 6 }}>
+      <div style={{ border: `1px solid ${colors.borderInner}`, borderRadius: 8, background: colors.panelBg, padding: 11, marginBottom: 11 }}>
+        <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 6 }}>
           THROUGHPUT
         </div>
         <svg viewBox="0 0 100 38" preserveAspectRatio="none" style={{ width: '100%', height: 108, display: 'block' }}>
           <defs>
             <linearGradient id="rkneti" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#37c2ff" stopOpacity="0.32" />
-              <stop offset="1" stopColor="#37c2ff" stopOpacity="0" />
+              <stop offset="0" stopColor="#2563eb" stopOpacity="0.18" />
+              <stop offset="1" stopColor="#2563eb" stopOpacity="0" />
             </linearGradient>
             <linearGradient id="rkneto" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#2bf0a0" stopOpacity="0.28" />
-              <stop offset="1" stopColor="#2bf0a0" stopOpacity="0" />
+              <stop offset="0" stopColor="#0891b2" stopOpacity="0.18" />
+              <stop offset="1" stopColor="#0891b2" stopOpacity="0" />
             </linearGradient>
           </defs>
           <polygon points={g.netInArea} fill="url(#rkneti)" />
           <polygon points={g.netOutArea} fill="url(#rkneto)" />
-          <polyline points={g.netInPts} fill="none" stroke={colors.blue} strokeWidth={0.9} />
-          <polyline points={g.netOutPts} fill="none" stroke={colors.accent} strokeWidth={0.9} />
+          <polyline points={g.netInPts} fill="none" stroke="#2563eb" strokeWidth={0.9} />
+          <polyline points={g.netOutPts} fill="none" stroke="#0891b2" strokeWidth={0.9} />
         </svg>
       </div>
 
@@ -54,6 +54,7 @@ export function NetworkView({ g, offline = false }: { g: GraphValues; offline?: 
           display: 'flex',
           justifyContent: 'space-between',
           border: `1px solid ${colors.borderInner}`,
+          borderRadius: 8,
           background: colors.panelBg,
           padding: '10px 12px',
         }}

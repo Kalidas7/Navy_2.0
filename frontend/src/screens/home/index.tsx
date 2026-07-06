@@ -14,7 +14,6 @@ import {
   selectVesselStats,
 } from '@/app/selectors';
 import { FleetHeader } from './components/FleetHeader';
-import { StatusStrip } from './components/StatusStrip';
 import { FleetToolbar } from './components/FleetToolbar';
 import { RackCard } from './components/RackCard';
 import { RackRow } from './components/RackRow';
@@ -31,18 +30,8 @@ export function FleetView() {
 
   return (
     <div data-screen-label="Home" className={styles.screen}>
-      {/* decorative navy background layers */}
-      <div className={styles.bgGlow} />
-      <div className={styles.bgGrid} />
-      <div className={styles.rings}>
-        <div className={styles.ringsSweep} />
-        <div className={styles.ringsInner1} />
-        <div className={styles.ringsInner2} />
-      </div>
-
       <div className={styles.content}>
         <FleetHeader />
-        <StatusStrip counts={counts} />
         <FleetToolbar chips={chips} />
 
         {state.homeStyle === 'A' && (
@@ -65,7 +54,7 @@ export function FleetView() {
         )}
 
         {noResults && (
-          <div className={`mono ${styles.empty}`}>NO RACKS MATCH FILTER</div>
+          <div className={styles.empty}>NO RACKS MATCH FILTER</div>
         )}
       </div>
     </div>

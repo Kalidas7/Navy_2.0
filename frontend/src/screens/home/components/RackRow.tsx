@@ -63,7 +63,7 @@ export function RackRow({ server }: { server: FleetServerVM }) {
           {server.vessel} · {server.pennant}
         </div>
       </div>
-      <div className="mono" style={{ fontSize: 11, color: '#7c9a90', flex: 1, minWidth: 90 }}>
+      <div className="mono" style={{ fontSize: 11, color: colors.textMid2, flex: 1, minWidth: 90 }}>
         {server.role}
       </div>
       <div style={{ display: 'flex', gap: 16, flexShrink: 0 }}>
@@ -72,7 +72,7 @@ export function RackRow({ server }: { server: FleetServerVM }) {
         <Metric label="TEMP" value={server.tempText} color={colors.textBody} />
       </div>
       <div style={{ flexShrink: 0 }}>
-        <Sparkline points={server.spark} stroke={server.statusColor} strokeWidth={1.2} width={110} height={30} />
+        <Sparkline points={server.spark} stroke={colors.accent} strokeWidth={1.4} opacity={1} width={110} height={30} />
       </div>
       <span
         className="cond"

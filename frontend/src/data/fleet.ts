@@ -73,12 +73,12 @@ export const EMPTY_COMP: CompData = {
 };
 
 const LOG_COLORS: Record<LogLevel, string> = {
-  OK: '#2bf0a0',
-  INFO: '#5b86a8',
-  WARN: '#ffb84d',
-  CRIT: '#ff5a5a',
+  OK: '#16a34a',
+  INFO: '#3b82f6',
+  WARN: '#d97706',
+  CRIT: '#dc2626',
 };
 
 export function logColor(level: LogLevel): string {
-  return LOG_COLORS[level] ?? '#2bf0a0';
+  return LOG_COLORS[level] ?? '#16a34a';
 }

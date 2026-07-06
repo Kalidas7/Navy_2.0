@@ -24,7 +24,7 @@ export function DrivesPanel() {
         <StatCard label="DISK USAGE" value={offline ? '—' : `${g.diskNow}%`} color={colors.accent} valueSize={26} />
       </div>
 
-      <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 8 }}>
+      <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 8 }}>
         {offline ? 'DRIVE BAYS' : `DISKS · ${bays.length}`}
       </div>
       {bays.length === 0 && <NoData label={offline ? 'NO LIVE FEED' : 'NO DISKS'} />}
@@ -38,19 +38,20 @@ export function DrivesPanel() {
             padding: '8px 10px',
             marginBottom: 6,
             border: `1px solid ${colors.borderInner}`,
-            background: colors.panelBg,
+            borderRadius: 8,
+            background: colors.iconTileGradient,
           }}
         >
           <span
-            style={{ width: 8, height: 8, borderRadius: '50%', background: d.color, boxShadow: `0 0 7px ${d.color}` }}
+            style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }}
           />
           <span className="mono" style={{ fontSize: 11, color: colors.textBody, width: 54 }}>
             {d.id}
           </span>
-          <div style={{ flex: 1, height: 6, background: '#0f1d24' }}>
+          <div style={{ flex: 1, height: 6, borderRadius: 3, overflow: 'hidden', background: '#e2e5ea' }}>
             <div style={{ height: '100%', width: `${d.used}%`, background: d.color }} />
           </div>
-          <span className="mono" style={{ fontSize: 10, color: '#7c9a90', width: 78, textAlign: 'right' }}>
+          <span className="mono" style={{ fontSize: 10, color: '#9aa3af', width: 78, textAlign: 'right' }}>
             {d.used}% · {d.temp}°C
           </span>
         </div>

@@ -14,9 +14,9 @@ function PsuModule({ m, battery = false, note }: { m: PsuMod; battery?: boolean;
   // The real host battery encodes charging state in `state` ("AC / CHARGING").
   const charging = /AC|CHARG|PLUG/i.test(m.state);
   return (
-    <div style={{ padding: 11, marginBottom: 8, border: `1px solid ${colors.borderInner}`, background: colors.panelBg }}>
+    <div style={{ padding: 11, marginBottom: 8, borderRadius: 8, border: `1px solid ${colors.borderInner}`, background: colors.iconTileGradient }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: battery ? 10 : 8 }}>
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: m.color, boxShadow: `0 0 7px ${m.color}` }} />
+        <span style={{ width: 8, height: 8, borderRadius: '50%', background: m.color }} />
         <span className="cond" style={{ fontSize: 15, color: colors.textHi }}>
           {m.id}
         </span>
@@ -72,13 +72,13 @@ export function PowerPanel() {
           color={colors.amber}
           valueSize={26}
           unit={offline ? undefined : 'W'}
-          unitColor="#7a5a2a"
+          unitColor="#9aa3af"
           unitSize={12}
         />
         <StatCard label="GPU BUSY" value={offline || g.effNow === '—' ? '—' : `${g.effNow}%`} color={colors.accent} valueSize={26} />
       </div>
 
-      <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 9 }}>
+      <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 9 }}>
         {offline ? 'POWER SOURCE' : 'POWER SOURCE'}
       </div>
       {mods.length === 0 && <NoData label={offline ? 'NO LIVE FEED' : 'NO SOURCE'} />}

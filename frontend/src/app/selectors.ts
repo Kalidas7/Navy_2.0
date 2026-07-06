@@ -84,10 +84,10 @@ export interface FilterChipVM {
 
 export function selectFilterChips(counts: FleetCounts): FilterChipVM[] {
   return [
-    { key: 'all', label: 'ALL', count: counts.total },
-    { key: 'online', label: 'ONLINE', count: counts.online },
-    { key: 'warn', label: 'WARN', count: counts.warn },
-    { key: 'crit', label: 'CRIT', count: counts.crit },
+    { key: 'all', label: 'All', count: counts.total },
+    { key: 'online', label: 'Online', count: counts.online },
+    { key: 'warn', label: 'Warning', count: counts.warn },
+    { key: 'crit', label: 'Critical', count: counts.crit },
   ];
 }
 

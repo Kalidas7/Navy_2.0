@@ -42,7 +42,7 @@ export function CpuGraph({ hist, now, height = 92 }: CpuGraphProps) {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
-        <span className="mono" style={{ fontSize: 9, color: colors.textMuted, letterSpacing: '.12em' }}>
+        <span className="mlabel" style={{ fontSize: 9, color: colors.textMuted, letterSpacing: '.12em' }}>
           CPU LOAD · 48s
         </span>
         <span className="cond" style={{ fontSize: 16, fontWeight: 700, color: colors.accent }}>

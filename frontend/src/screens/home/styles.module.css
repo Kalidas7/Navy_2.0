@@ -9,67 +9,30 @@
   inset: 0;
   z-index: 10;
   overflow-y: auto;
-  background: #06090b;
+  background: #f5f6f8;
 }
 
-/* Decorative navy background layers (z 0, non-interactive) */
+/* Decorative atmosphere layers removed for the clean light dashboard.
+   Classes are kept (still referenced in JSX) but render nothing. */
 .bgGlow {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(120% 90% at 80% -10%, rgba(31, 90, 138, 0.16), transparent 55%),
-    radial-gradient(90% 80% at 10% 110%, rgba(31, 90, 138, 0.1), transparent 50%);
+  display: none;
 }
 
 .bgGrid {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
-  background-image:
-    linear-gradient(#0c1a2200 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20, 40, 52, 0.35) 1px, transparent 1px),
-    linear-gradient(rgba(20, 40, 52, 0.35) 1px, transparent 1px);
-  background-size:
-    100% 100%,
-    46px 46px,
-    46px 46px;
+  display: none;
 }
 
-/* Slowly rotating concentric-ring motif (top-right) */
 .rings {
-  position: fixed;
-  top: 8%;
-  right: 5%;
-  width: 380px;
-  height: 380px;
-  pointer-events: none;
-  z-index: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(31, 90, 138, 0.14);
-  opacity: 0.5;
+  display: none;
 }
 .ringsSweep {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg, rgba(43, 240, 160, 0.07), transparent 60%);
-  animation: rkspin 14s linear infinite;
+  display: none;
 }
 .ringsInner1 {
-  position: absolute;
-  inset: 64px;
-  border-radius: 50%;
-  border: 1px solid rgba(31, 90, 138, 0.12);
+  display: none;
 }
 .ringsInner2 {
-  position: absolute;
-  inset: 140px;
-  border-radius: 50%;
-  border: 1px solid rgba(31, 90, 138, 0.1);
+  display: none;
 }
 
 /* Centered content column */
@@ -107,7 +70,7 @@
 .empty {
   text-align: center;
   padding: 50px;
-  color: #46645c;
+  color: #9aa3af;
   font-size: 13px;
   letter-spacing: 0.1em;
 }

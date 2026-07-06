@@ -41,7 +41,7 @@ export function DonutGauge({
       <div style={{ position: 'relative', width: size, height: size }}>
         <svg width={size} height={size} style={{ display: 'block' }}>
           {/* track (free space) */}
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#122029" strokeWidth={stroke} />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e2e5ea" strokeWidth={stroke} />
           {/* used arc — starts at 12 o'clock, sweeps clockwise */}
           {!offline && p > 0 && (
             <circle
@@ -54,7 +54,7 @@ export function DonutGauge({
               strokeLinecap="round"
               strokeDasharray={`${dash} ${circumference - dash}`}
               transform={`rotate(-90 ${cx} ${cy})`}
-              style={{ filter: `drop-shadow(0 0 4px ${color}66)`, transition: 'stroke-dasharray .3s' }}
+              style={{ transition: 'stroke-dasharray .3s' }}
             />
           )}
         </svg>
@@ -73,7 +73,7 @@ export function DonutGauge({
           <div className="cond" style={{ fontSize: 26, fontWeight: 700, lineHeight: 1, color: offline ? colors.textMuted : color }}>
             {offline ? '—' : centerLabel ?? `${Math.round(p)}%`}
           </div>
-          <div className="mono" style={{ fontSize: 8.5, letterSpacing: '.14em', color: colors.textMuted }}>
+          <div className="mlabel" style={{ fontSize: 8.5, letterSpacing: '.14em', color: colors.textMuted }}>
             {caption}
           </div>
         </div>

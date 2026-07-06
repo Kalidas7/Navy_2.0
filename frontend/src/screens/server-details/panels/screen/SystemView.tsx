@@ -39,7 +39,7 @@ export function SystemView({
             color={colors.accent}
             valueSize={30}
             unit={offline ? undefined : '%'}
-            unitColor="#3a6357"
+            unitColor="#9aa3af"
             unitSize={14}
           />
           {expandable && (
@@ -65,7 +65,7 @@ export function SystemView({
           color={colors.blue}
           valueSize={30}
           unit={offline ? undefined : '%'}
-          unitColor="#356077"
+          unitColor="#9aa3af"
           unitSize={14}
         />
       </div>
@@ -76,29 +76,29 @@ export function SystemView({
         </div>
       )}
 
-      <div style={{ border: `1px solid ${colors.borderInner}`, background: colors.panelBg, padding: 11, marginBottom: 11 }}>
+      <div style={{ border: `1px solid ${colors.borderInner}`, borderRadius: 8, background: colors.panelBg, padding: 11, marginBottom: 11 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em' }}>
+          <span className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em' }}>
             UTILISATION · 48s
           </span>
-          <span className="mono" style={{ fontSize: 9.5, color: '#3a6357' }}>
+          <span className="mono" style={{ fontSize: 9.5, color: '#9aa3af' }}>
             CPU ▬ MEM
           </span>
         </div>
         <svg viewBox="0 0 100 38" preserveAspectRatio="none" style={{ width: '100%', height: 104, display: 'block' }}>
-          <line x1="0" y1="19" x2="100" y2="19" stroke="#122029" />
-          <line x1="0" y1="28.5" x2="100" y2="28.5" stroke="#122029" />
+          <line x1="0" y1="19" x2="100" y2="19" stroke="#e2e5ea" />
+          <line x1="0" y1="28.5" x2="100" y2="28.5" stroke="#e2e5ea" />
           <polyline points={g.ramPts} fill="none" stroke={colors.navy} strokeWidth={0.9} strokeLinejoin="round" />
           <polyline points={g.cpuPts} fill="none" stroke={colors.accent} strokeWidth={1.1} strokeLinejoin="round" />
         </svg>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, alignItems: 'stretch' }}>
-        <div style={{ border: `1px solid ${colors.borderInner}`, background: colors.panelBg, padding: '10px 11px' }}>
+        <div style={{ border: `1px solid ${colors.borderInner}`, borderRadius: 8, background: colors.panelBg, padding: '10px 11px' }}>
           <TempGauge value={g.tempNow} offline={offline} />
         </div>
-        <div style={{ border: `1px solid ${colors.borderInner}`, background: colors.panelBg, padding: '10px 11px' }}>
-          <div className="mono" style={{ fontSize: 8.5, letterSpacing: '.14em', color: colors.textMuted, textAlign: 'center' }}>
+        <div style={{ border: `1px solid ${colors.borderInner}`, borderRadius: 8, background: colors.panelBg, padding: '10px 11px' }}>
+          <div className="mlabel" style={{ fontSize: 8.5, letterSpacing: '.14em', color: colors.textMuted, textAlign: 'center' }}>
             DISK USAGE
           </div>
           <DonutGauge pct={offline ? 0 : g.diskNow} offline={offline} color={colors.blue} caption="USED" />

@@ -100,7 +100,7 @@ export function TempGauge({ value, offline = false, size = 120 }: TempGaugeProps
           <path
             d={arcPath(cx, cy, r, START, SWEEP)}
             fill="none"
-            stroke="#122029"
+            stroke="#e2e5ea"
             strokeWidth={stroke}
             strokeLinecap="round"
           />
@@ -112,7 +112,7 @@ export function TempGauge({ value, offline = false, size = 120 }: TempGaugeProps
               stroke={`url(#${gid})`}
               strokeWidth={stroke}
               strokeLinecap="round"
-              style={{ filter: `drop-shadow(0 0 4px ${col}88)`, transition: 'stroke-dasharray .3s' }}
+              style={{ transition: 'stroke-dasharray .3s' }}
             />
           )}
         </svg>
@@ -132,7 +132,7 @@ export function TempGauge({ value, offline = false, size = 120 }: TempGaugeProps
             {offline ? '—' : value}
             {!offline && <span style={{ fontSize: 15, color: colors.textMuted }}>°</span>}
           </div>
-          <div className="mono" style={{ fontSize: 8.5, letterSpacing: '.14em', color: colors.textMuted }}>
+          <div className="mlabel" style={{ fontSize: 8.5, letterSpacing: '.14em', color: colors.textMuted }}>
             CORE TEMP
           </div>
         </div>

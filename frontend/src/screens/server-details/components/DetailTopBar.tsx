@@ -1,7 +1,7 @@
 /** Detail top bar: rack identity, back-to-fleet anchor, alerts, clock. */
 import { useApp } from '@/app/AppContext';
 import { selectActiveServer, selectAlertCount } from '@/app/selectors';
-import { colors } from '@/config/tokens';
+import { colors, STATUS_META } from '@/config/tokens';
 
 export function DetailTopBar() {
   const { state, compStates, backHome } = useApp();
@@ -20,9 +20,8 @@ export function DetailTopBar() {
         alignItems: 'center',
         gap: 16,
         padding: '0 16px',
-        background: 'linear-gradient(180deg,rgba(6,11,14,.94),rgba(6,11,14,.55))',
+        background: colors.panelBg,
         borderBottom: `1px solid ${colors.borderChrome}`,
-        backdropFilter: 'blur(6px)',
         pointerEvents: 'auto',
         zIndex: 4,
       }}
@@ -57,10 +56,10 @@ export function DetailTopBar() {
       </button>
 
       <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.05 }}>
-        <div className="cond" style={{ fontSize: 19, fontWeight: 700, letterSpacing: '.06em', color: colors.textHi }}>
+        <div className="mlabel" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '.01em', color: colors.textHi }}>
           {srv.code}
         </div>
-        <div className="mono" style={{ fontSize: 10.5, color: colors.textMuted, letterSpacing: '.08em' }}>
+        <div className="mlabel" style={{ fontSize: 11.5, color: colors.textMuted }}>
           {srv.vessel} · {srv.pennant} · {srv.role}
         </div>
       </div>
@@ -73,17 +72,18 @@ export function DetailTopBar() {
           alignItems: 'center',
           gap: 7,
           padding: '5px 11px',
-          border: '1px solid #2a1a1a',
-          background: 'rgba(40,12,12,.4)',
+          borderRadius: 8,
+          border: `1px solid ${STATUS_META.warn.bd}`,
+          background: STATUS_META.warn.bg,
         }}
       >
-        <span style={{ color: '#ff8a4d', fontSize: 12 }}>⚠</span>
+        <span style={{ color: colors.amber, fontSize: 12 }}>⚠</span>
         <span className="mono" style={{ fontSize: 11, color: colors.alertText, letterSpacing: '.08em' }}>
           {alertCount} ALERTS
         </span>
       </div>
 
-      <div className="mono" style={{ fontSize: 12, color: '#7fb8a6', letterSpacing: '.1em' }}>
+      <div className="mono" style={{ fontSize: 12, color: colors.textMid2, letterSpacing: '.08em' }}>
         {state.clock}
       </div>
     </div>

@@ -30,10 +30,10 @@ function PerCoreBars({ perCore }: { perCore: number[] }) {
         const col = coreColor(p);
         return (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-            <span className="mono" style={{ fontSize: 10, color: '#7c9a90', width: 46 }}>
+            <span className="mono" style={{ fontSize: 10, color: '#9aa3af', width: 46 }}>
               Core {i}
             </span>
-            <div style={{ flex: 1, height: 7, background: '#0f1d24' }}>
+            <div style={{ flex: 1, height: 7, borderRadius: 3, overflow: 'hidden', background: '#e2e5ea' }}>
               <div style={{ height: '100%', width: `${p}%`, background: col, transition: 'width .3s' }} />
             </div>
             <span className="mono" style={{ fontSize: 10, color: col, width: 34, textAlign: 'right' }}>
@@ -56,7 +56,7 @@ export function StatusPanel() {
 
   return (
     <>
-      <div className="mono" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 9 }}>
+      <div className="mlabel" style={{ fontSize: 9.5, color: colors.textMuted, letterSpacing: '.12em', marginBottom: 9 }}>
         SUBSYSTEM HEALTH
       </div>
       {items.length === 0 && <NoData label={offline ? 'NO LIVE FEED' : 'NO DATA'} />}
@@ -73,13 +73,14 @@ export function StatusPanel() {
                 alignItems: 'center',
                 gap: 11,
                 padding: '9px 11px',
+                borderRadius: 8,
                 border: `1px solid ${open ? colors.accent : colors.borderInner}`,
-                background: colors.panelBg,
+                background: colors.iconTileGradient,
                 cursor: expandable ? 'pointer' : 'default',
               }}
             >
-              <span style={{ width: 9, height: 9, borderRadius: '50%', background: s.color, boxShadow: `0 0 8px ${s.color}` }} />
-              <span className="cond" style={{ fontSize: 14, color: colors.textBody, flex: 1, letterSpacing: '.03em' }}>
+              <span style={{ width: 9, height: 9, borderRadius: '50%', background: s.color }} />
+              <span className="mlabel" style={{ fontSize: 13, fontWeight: 600, color: colors.textBody, flex: 1 }}>
                 {s.name}
               </span>
               <span className="mono" style={{ fontSize: 10.5, color: s.color, letterSpacing: '.06em' }}>
@@ -105,7 +106,8 @@ export function StatusPanel() {
                 style={{
                   border: `1px solid ${colors.accent}`,
                   borderTop: 'none',
-                  background: colors.panelBg,
+                  borderRadius: '0 0 8px 8px',
+                  background: colors.iconTileGradient,
                   padding: '10px 11px',
                 }}
               >
