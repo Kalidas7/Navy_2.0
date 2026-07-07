@@ -12,6 +12,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '@/app/AppContext';
+import { useComponents } from '@/hooks/useComponents';
 import { selectCurrentNotifs, selectAllNotifs, type NotifItem } from '@/app/selectors';
 import { colors } from '@/config/tokens';
 
@@ -24,8 +25,12 @@ export function NotificationsMenu({ variant }: { variant: 'home' | 'detail' }) {
   const [tab, setTab] = useState<Tab>('current'); // detail default = Current
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  const current = selectCurrentNotifs(state);
-  const all = selectAllNotifs(state);
+  // Live per-subsystem status for the active rack (SSE for the live host, else
+  // the reducer's overlaid payload) — no longer routed through the shared
+  // AppContext, so a fresh frame doesn't re-render every useApp() consumer.
+  const statusItems = useComponents().statusItems;
+  const current = selectCurrentNotifs(state, statusItems);
+  const all = selectAllNotifs(state, statusItems);
   // Home always shows the fleet-wide list; detail switches by tab.
   const list = !isDetail ? all : tab === 'current' ? current : all;
   const count = all.length;

@@ -140,9 +140,9 @@ export interface NotifItem {
  * the live component payload (state.comp.statusItems). No fabricated data: only
  * subsystems the backend actually reported as WARNING/CRITICAL appear.
  */
-export function selectCurrentNotifs(state: AppState): NotifItem[] {
+export function selectCurrentNotifs(state: AppState, statusItems: StatusItem[]): NotifItem[] {
   const srv = selectActiveServer(state);
-  return state.comp.statusItems
+  return statusItems
     .filter((it) => it.state === 'WARNING' || it.state === 'CRITICAL')
     .map((it) => ({
       id: `${srv.id}:${it.name}`,
@@ -159,8 +159,8 @@ export function selectCurrentNotifs(state: AppState): NotifItem[] {
  * carry no per-subsystem telemetry (they're identity-only shells), so we honestly
  * surface their coarse status rather than inventing subsystem detail.
  */
-export function selectAllNotifs(state: AppState): NotifItem[] {
-  const current = selectCurrentNotifs(state);
+export function selectAllNotifs(state: AppState, statusItems: StatusItem[]): NotifItem[] {
+  const current = selectCurrentNotifs(state, statusItems);
   const others = state.servers
     .filter((s) => s.id !== state.activeServerId && (s.status === 'warn' || s.status === 'crit'))
     .map((s) => ({
