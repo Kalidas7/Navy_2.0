@@ -8,6 +8,8 @@ import { useApp } from '@/app/AppContext';
 import { selectActiveComp } from '../compView';
 import { colors } from '@/config/tokens';
 import { TimeRangeMenu, type TimeRange } from './TimeRangeMenu';
+import { HistoryPanel } from './HistoryPanel';
+import { HISTORY_GRAPHS } from './historyConfig';
 import { ScreenPanel } from '../panels/ScreenPanel';
 import { DrivesPanel } from '../panels/DrivesPanel';
 import { FanPanel } from '../panels/FanPanel';
@@ -39,6 +41,8 @@ export function RailPanel() {
   const active = selectActiveComp(compStates, sel);
   const Panel = PANELS[sel];
   const isLive = range.key === 'live';
+  // Does this menu have any plottable stored metric? (status has none.)
+  const hasHistory = HISTORY_GRAPHS[sel].length > 0;
 
   return (
     <div
@@ -104,16 +108,20 @@ export function RailPanel() {
           </button>
         </div>
 
-        {/* body — live panel, or an honest "no history yet" notice for any
-            non-Live range (the app persists no metric history yet). */}
+        {/* body — live per-subsystem panel, or this menu's OWN stored-history
+            graphs for any non-Live range. Only the graphs change with the range;
+            the live scalar readouts (shown under Live) are unaffected. Menus with
+            no plottable series show a short notice instead of empty space. */}
         <div style={{ flex: 1, overflowY: 'auto', padding: 14 }}>
           {isLive ? (
             <Panel />
+          ) : hasHistory ? (
+            <HistoryPanel comp={sel} range={range} />
           ) : (
             <div
               style={{
                 height: '100%',
-                minHeight: 180,
+                minHeight: 160,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -123,13 +131,13 @@ export function RailPanel() {
                 color: colors.textMuted,
               }}
             >
-              <span style={{ fontSize: 26, color: colors.textMuted2 }}>◷</span>
-              <div className="mlabel" style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.06em', color: colors.textMid }}>
-                NO HISTORY YET
+              <span style={{ fontSize: 24, color: colors.textMuted2 }}>◷</span>
+              <div className="mlabel" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.06em', color: colors.textMid }}>
+                NO TREND FOR THIS VIEW
               </div>
               <div style={{ fontSize: 11.5, maxWidth: 240, lineHeight: 1.4 }}>
-                Historical telemetry isn’t being stored yet — only the live feed is
-                available. Switch back to <strong>Live</strong> to see current readings.
+                This panel shows a live snapshot with no single metric to chart.
+                Switch back to <strong>Live</strong> for current readings.
               </div>
             </div>
           )}

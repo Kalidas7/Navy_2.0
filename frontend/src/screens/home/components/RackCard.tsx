@@ -9,12 +9,13 @@
  * left accent bar is transparent for nominal racks (server.barColor already
  * encodes that).
  */
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useApp } from '@/app/AppContext';
 import { useSystemMetrics } from '@/app/SystemMetricsContext';
 import { Card } from '@/components/common/Card';
 import { MetricValue } from '@/components/common/MetricValue';
 import { Sparkline } from '@/components/common/Sparkline';
+import { sparkCoords } from '@/lib/sparkline';
 import { colors } from '@/config/tokens';
 import { isLiveHost } from '@/data/fleet';
 import type { FleetServerVM } from '@/app/selectors';
@@ -26,7 +27,7 @@ export function RackCard({ server }: { server: FleetServerVM }) {
   // stream (same source of truth as the detail view), so the card and the
   // detail page never diverge. `live` is null until the first frame lands, in
   // which case we fall back to the hydrated fleet values.
-  const { card } = useSystemMetrics();
+  const { card, hist } = useSystemMetrics();
   const isLocal = isLiveHost(server.id);
   const live = isLocal ? card : null;
 
@@ -36,6 +37,14 @@ export function RackCard({ server }: { server: FleetServerVM }) {
   const ram = live ? `${live.ram}%` : server.ramText;
   const temp = live ? `${live.temp}°` : server.tempText;
   const sparkPts = live ? live.spark : server.spark;
+  // Raw CPU buffer for the sparkline's hover (localhost only). Coords MUST use
+  // the same geometry the card's spark string was built with (100×30, pad 2 —
+  // see useSystemMetricsSource) so the crosshair dot lands on the drawn line.
+  const sparkCpu = isLocal ? hist.cpu : null;
+  const sparkPtsCoords = useMemo(
+    () => (sparkCpu ? sparkCoords(sparkCpu, 100, 30, 2) : undefined),
+    [sparkCpu],
+  );
 
   // Stable handler so re-creating it each tick doesn't matter and callers stay tidy.
   const onOpen = useCallback(() => enterDetail(server.id), [enterDetail, server.id]);
@@ -62,7 +71,17 @@ export function RackCard({ server }: { server: FleetServerVM }) {
       </div>
 
       <div style={{ marginBottom: 11 }}>
-        <Sparkline points={sparkPts} stroke={colors.accent} strokeWidth={1.4} opacity={1} height={30} />
+        <Sparkline
+          points={sparkPts}
+          stroke={colors.accent}
+          strokeWidth={1.4}
+          opacity={1}
+          height={30}
+          viewHeight={30}
+          values={sparkCpu ?? undefined}
+          coords={sparkPtsCoords}
+          format={(v) => `${Math.round(v)}% CPU`}
+        />
       </div>
 
       {/* footer: single cheap text node, kept inline to preserve visual order */}
