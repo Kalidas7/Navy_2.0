@@ -3,9 +3,11 @@
  * Header (label + state + close) over a scrollable body that
  * routes to the selected subsystem's panel.
  */
+import { useEffect, useState } from 'react';
 import { useApp } from '@/app/AppContext';
 import { selectActiveComp } from '../compView';
 import { colors } from '@/config/tokens';
+import { TimeRangeMenu, type TimeRange } from './TimeRangeMenu';
 import { ScreenPanel } from '../panels/ScreenPanel';
 import { DrivesPanel } from '../panels/DrivesPanel';
 import { FanPanel } from '../panels/FanPanel';
@@ -26,10 +28,17 @@ const PANELS: Record<CompKey, () => React.JSX.Element> = {
 export function RailPanel() {
   const { state, compStates, closeMenu } = useApp();
   const sel = state.selectedComp;
+  // Per-panel time range; defaults to Live. Reset to Live whenever a different
+  // subsystem is selected so a new panel always opens on the live feed.
+  const [range, setRange] = useState<TimeRange>({ key: 'live' });
+  useEffect(() => {
+    setRange({ key: 'live' });
+  }, [sel]);
   if (!sel) return null;
 
   const active = selectActiveComp(compStates, sel);
   const Panel = PANELS[sel];
+  const isLive = range.key === 'live';
 
   return (
     <div
@@ -66,13 +75,12 @@ export function RailPanel() {
             background: `linear-gradient(90deg,${active.tint},transparent)`,
           }}
         >
-          <div style={{ lineHeight: 1.1 }}>
+          <div style={{ lineHeight: 1.1, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div className="mlabel" style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '.02em', color: colors.textHi }}>
               {active.label}
             </div>
-            <div className="mlabel" style={{ fontSize: 10, color: active.color, letterSpacing: '.12em' }}>
-              {active.stateLabel}
-            </div>
+            {/* Time-range selector — replaces the old NOMINAL status text. */}
+            <TimeRangeMenu value={range} onChange={setRange} />
           </div>
           <div style={{ flex: 1 }} />
           <button
@@ -96,9 +104,35 @@ export function RailPanel() {
           </button>
         </div>
 
-        {/* body */}
+        {/* body — live panel, or an honest "no history yet" notice for any
+            non-Live range (the app persists no metric history yet). */}
         <div style={{ flex: 1, overflowY: 'auto', padding: 14 }}>
-          <Panel />
+          {isLive ? (
+            <Panel />
+          ) : (
+            <div
+              style={{
+                height: '100%',
+                minHeight: 180,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                textAlign: 'center',
+                color: colors.textMuted,
+              }}
+            >
+              <span style={{ fontSize: 26, color: colors.textMuted2 }}>◷</span>
+              <div className="mlabel" style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.06em', color: colors.textMid }}>
+                NO HISTORY YET
+              </div>
+              <div style={{ fontSize: 11.5, maxWidth: 240, lineHeight: 1.4 }}>
+                Historical telemetry isn’t being stored yet — only the live feed is
+                available. Switch back to <strong>Live</strong> to see current readings.
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

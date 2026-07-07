@@ -25,6 +25,7 @@ import shutil
 import subprocess
 import threading
 import time
+from dataclasses import dataclass
 from typing import Any
 
 import psutil
@@ -37,11 +38,24 @@ import psutil
 _CPU_TEMP_CHIPS = ("coretemp", "k10temp", "cpu_thermal", "acpitz", "dell_smm")
 
 
-def _cpu_temp() -> float | None:
+def _read_temps() -> dict[str, Any]:
+    """One raw read of psutil.sensors_temperatures(); {} if unavailable."""
     try:
-        temps = psutil.sensors_temperatures()
+        return psutil.sensors_temperatures() or {}
     except (AttributeError, OSError):
-        return None
+        return {}
+
+
+def _read_fans() -> dict[str, Any]:
+    """One raw read of psutil.sensors_fans(); {} if unavailable."""
+    try:
+        return psutil.sensors_fans() or {}
+    except (AttributeError, OSError):
+        return {}
+
+
+def _cpu_temp_from(temps: dict[str, Any]) -> float | None:
+    """Derive the CPU package temperature from an already-read temps dict."""
     if not temps:
         return None
     # Prefer a package/Tctl reading from a known CPU chip.
@@ -60,11 +74,17 @@ def _cpu_temp() -> float | None:
     return round(max(allvals), 1) if allvals else None
 
 
-def _fan_rpm() -> int | None:
-    try:
-        fans = psutil.sensors_fans()
-    except (AttributeError, OSError):
-        return None
+def _disk_temp_from(temps: dict[str, Any]) -> int | None:
+    """Derive a representative disk (NVMe) temperature from a temps dict."""
+    for chip in ("nvme", "drivetemp", "sdd"):
+        for e in temps.get(chip, []):
+            if e.current:
+                return round(e.current)
+    return None
+
+
+def _fan_rpm_from(fans: dict[str, Any]) -> int | None:
+    """Max fan RPM from an already-read fans dict, or None if no fan sensor."""
     if not fans:
         return None
     # Keep 0 readings: a present-but-stopped fan reports current=0 and must stay
@@ -72,6 +92,44 @@ def _fan_rpm() -> int | None:
     # (None) values, not idle ones.
     vals = [f.current for entries in fans.values() for f in entries if f.current is not None]
     return int(max(vals)) if vals else None
+
+
+@dataclass
+class SharedReadings:
+    """
+    Sensor readings gathered ONCE per frame and shared across the scalar sample
+    and the per-device component builders. Before this existed, cpu_percent was
+    read 4×, sensors_temperatures 3×, virtual_memory 3×, and sensors_fans 2×
+    within a single frame — wasted syscalls, and (for cpu_percent) wrong values,
+    since cpu_percent(interval=None) measures load since ITS OWN last call, so a
+    2nd/3rd call in the same frame reports a near-zero window. Reading each source
+    exactly once and passing the values down fixes both.
+    """
+
+    cpu: float
+    # Full virtual_memory() result: `.percent` for the health rails, plus
+    # used/total/swap for the scalar sample — one read serves both.
+    vm: Any
+    cpu_temp: float | None
+    disk_temp: int | None
+    fans: dict[str, Any]
+
+    @property
+    def mem(self) -> float:
+        """Memory-used percent — the value the component builders need."""
+        return self.vm.percent
+
+
+def _read_shared() -> SharedReadings:
+    """Read every shared sensor exactly once and bundle the values."""
+    temps = _read_temps()
+    return SharedReadings(
+        cpu=psutil.cpu_percent(interval=None),
+        vm=psutil.virtual_memory(),
+        cpu_temp=_cpu_temp_from(temps),
+        disk_temp=_disk_temp_from(temps),
+        fans=_read_fans(),
+    )
 
 
 def _fmt_uptime(seconds: float) -> str:
@@ -100,26 +158,12 @@ def _health_color(pct: float, warn: float = 80, crit: float = 92) -> str:
     return _RED if pct >= crit else _AMBER if pct >= warn else _GREEN
 
 
-def _real_disks() -> list[dict[str, Any]]:
+def _real_disks(disk_temp: int | None) -> list[dict[str, Any]]:
     """
     Real fixed disks as "drive bays". One entry per physical disk (loop/snap
-    pseudo-devices are skipped). Usage is per-mount; temp is the NVMe composite
-    from sensors when available.
+    pseudo-devices are skipped). Usage is per-mount; `disk_temp` is the NVMe
+    composite temperature (read once per frame by the caller), or None.
     """
-    # A representative NVMe/disk temperature, if the chip exposes one.
-    disk_temp = None
-    try:
-        temps = psutil.sensors_temperatures()
-        for chip in ("nvme", "drivetemp", "sdd"):
-            for e in temps.get(chip, []):
-                if e.current:
-                    disk_temp = round(e.current)
-                    break
-            if disk_temp is not None:
-                break
-    except (AttributeError, OSError):
-        pass
-
     bays: list[dict[str, Any]] = []
     seen: set[str] = set()
     try:
@@ -163,13 +207,12 @@ def _friendly_disk_name(mountpoint: str, dev: str) -> str:
     return tail.capitalize() if tail else dev.rsplit("/", 1)[-1].upper()
 
 
-def _real_fans() -> list[dict[str, Any]]:
-    """Every real fan the machine exposes, with true RPM (empty if none)."""
+def _real_fans(fans: dict[str, Any]) -> list[dict[str, Any]]:
+    """
+    Every real fan the machine exposes, with true RPM (empty if none). `fans` is
+    the psutil.sensors_fans() dict, read once per frame by the caller.
+    """
     out: list[dict[str, Any]] = []
-    try:
-        fans = psutil.sensors_fans()
-    except (AttributeError, OSError):
-        return out
     idx = 1
     for chip, entries in (fans or {}).items():
         for e in entries:
@@ -270,10 +313,11 @@ def _real_nics() -> list[dict[str, Any]]:
     return out
 
 
-def _real_power() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def _real_power(cpu: float, mem: float) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Power modules + rails from real sensors. On a laptop the 'PSU module' is the
     battery/AC; 'rails' are repurposed to show battery %, CPU load, and mem load.
+    `cpu`/`mem` are the frame's shared readings (read once by the caller).
     """
     mods: list[dict[str, Any]] = []
     try:
@@ -292,8 +336,6 @@ def _real_power() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
             }
         )
 
-    cpu = psutil.cpu_percent(interval=None)
-    mem = psutil.virtual_memory().percent
     rails = [
         {"name": "BATTERY", "pct": round(bat.percent) if bat else 0, "color": _GREEN},
         {"name": "CPU", "pct": round(cpu), "color": _BLUE},
@@ -302,8 +344,11 @@ def _real_power() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     return mods, rails
 
 
-def _real_status_items() -> list[dict[str, Any]]:
-    """Subsystem health list built from real load/thermal readings."""
+def _real_status_items(cpu: float, mem: float, cpu_temp: float | None) -> list[dict[str, Any]]:
+    """
+    Subsystem health list built from real load/thermal readings. `cpu`/`mem`/
+    `cpu_temp` are the frame's shared readings (read once by the caller).
+    """
     items: list[dict[str, Any]] = []
 
     def add(name: str, ok: bool, warn: bool = False) -> None:
@@ -311,9 +356,7 @@ def _real_status_items() -> list[dict[str, Any]]:
         color = _RED if state == "CRITICAL" else _AMBER if state == "WARNING" else _GREEN
         items.append({"name": name, "state": state, "color": color})
 
-    cpu = psutil.cpu_percent(interval=None)
-    mem = psutil.virtual_memory().percent
-    temp = _cpu_temp() or 0
+    temp = cpu_temp or 0
     try:
         du = psutil.disk_usage("/").percent
     except OSError:
@@ -326,23 +369,29 @@ def _real_status_items() -> list[dict[str, Any]]:
     return items
 
 
-def host_components() -> dict[str, Any]:
+def host_components(shared: SharedReadings | None = None) -> dict[str, Any]:
     """
     Real per-device component payload for the localhost rack, in the frontend's
     CompData shape. Only devices that actually exist are listed — no fabricated
     bays/fans/PSUs, and no sonar contacts.
+
+    `shared` carries the frame's once-read sensor values so this shares them with
+    the scalar sample (see `snapshot`). Called standalone (e.g. rack_components),
+    it reads its own — still exactly once per call.
     """
-    mods, rails = _real_power()
-    # Sort device lists by id so the order is stable across the frontend's 5s
-    # component poll — otherwise non-deterministic psutil enumeration could make
-    # keyed rows (disks/fans/NICs) visibly reshuffle each refresh.
+    if shared is None:
+        shared = _read_shared()
+    mods, rails = _real_power(shared.cpu, shared.mem)
+    # Sort device lists by id so the order is stable across refreshes — otherwise
+    # non-deterministic psutil enumeration could make keyed rows (disks/fans/NICs)
+    # visibly reshuffle each frame.
     return {
-        "driveBays": sorted(_real_disks(), key=lambda x: x["id"]),
-        "fans": sorted(_real_fans(), key=lambda x: x["id"]),
+        "driveBays": sorted(_real_disks(shared.disk_temp), key=lambda x: x["id"]),
+        "fans": sorted(_real_fans(shared.fans), key=lambda x: x["id"]),
         "netPorts": sorted(_real_nics(), key=lambda x: x["id"]),
         "psuMods": mods,
         "psuRails": rails,
-        "statusItems": _real_status_items(),
+        "statusItems": _real_status_items(shared.cpu, shared.mem, shared.cpu_temp),
         "contacts": [],  # no radar/sonar on a real host
     }
 
@@ -664,12 +713,19 @@ class _Sampler:
         psutil.cpu_percent(interval=None)
         psutil.cpu_percent(interval=None, percpu=True)
 
-    def sample(self) -> dict[str, Any]:
+    def sample(self, shared: SharedReadings | None = None) -> dict[str, Any]:
+        # `shared` carries the frame's once-read cpu/mem/temp/fan values so the
+        # scalar sample and the component payload never re-read the same sensor
+        # (and never call cpu_percent twice, which would corrupt the reading).
+        # Called standalone (e.g. the plain /api/system GET) it reads its own.
+        if shared is None:
+            shared = _read_shared()
+
         now = time.monotonic()
         dt = max(now - self._prev_t, 1e-3)
 
-        # --- CPU ---
-        cpu_pct = psutil.cpu_percent(interval=None)
+        # --- CPU --- (cpu_pct from the shared read; per_core is a distinct metric)
+        cpu_pct = shared.cpu
         per_core = psutil.cpu_percent(interval=None, percpu=True)
         freq = psutil.cpu_freq()
         try:
@@ -677,8 +733,8 @@ class _Sampler:
         except (OSError, AttributeError):
             load1 = load5 = load15 = None
 
-        # --- Memory ---
-        vm = psutil.virtual_memory()
+        # --- Memory --- (vm from the shared read; swap is its own cheap call)
+        vm = shared.vm
         sm = psutil.swap_memory()
 
         # --- Disk usage + I/O rate ---
@@ -759,7 +815,7 @@ class _Sampler:
                 "freqMhz": round(freq.current) if freq else None,
                 "freqMaxMhz": round(freq.max) if freq and freq.max else None,
                 "load": None if load1 is None else [round(load1, 2), round(load5, 2), round(load15, 2)],
-                "tempC": _cpu_temp(),
+                "tempC": shared.cpu_temp,
             },
             "mem": {
                 "pct": round(vm.percent, 1),
@@ -781,7 +837,7 @@ class _Sampler:
                 "rxPps": round(rx_pps),
                 "txPps": round(tx_pps),
             },
-            "fanRpm": _fan_rpm(),
+            "fanRpm": _fan_rpm_from(shared.fans),
             "battery": battery,
             "gpu": read_intel_gpu(),
             # Real measured system power (watts) from Intel RAPL, or None if the
@@ -807,7 +863,11 @@ def snapshot(with_components: bool = False) -> dict[str, Any]:
     refresh cadences. Callers that only need scalars (e.g. rack telemetry) omit
     it to avoid the extra per-device sensor work.
     """
-    snap = _sampler.sample()
+    # Read the shared sensors ONCE, then hand the same values to both the scalar
+    # sample and (if requested) the per-device components — so cpu/mem/temp/fans
+    # are read exactly once per frame instead of 2–4× each.
+    shared = _read_shared()
+    snap = _sampler.sample(shared)
     if with_components:
-        snap["components"] = host_components()
+        snap["components"] = host_components(shared)
     return snap

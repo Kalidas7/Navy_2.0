@@ -2,6 +2,7 @@
 import { useApp } from '@/app/AppContext';
 import { useGraphValues } from '@/hooks/useGraphValues';
 import { useSystemMetrics } from '@/app/SystemMetricsContext';
+import { useComponents } from '@/hooks/useComponents';
 import { StatCard } from '@/components/common/StatCard';
 import { BatteryGauge } from '@/components/common/BatteryGauge';
 import { NoData } from '@/components/common/NoData';
@@ -60,7 +61,7 @@ export function PowerPanel() {
   const live = useSystemMetrics();
   const offlineValues = useGraphValues();
   const g = isLocal ? live.g : offlineValues;
-  const mods = state.comp.psuMods;
+  const mods = useComponents().psuMods;
 
   return (
     <>

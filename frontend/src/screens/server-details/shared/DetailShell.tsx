@@ -14,7 +14,6 @@ import { useApp } from '@/app/AppContext';
 import { useGraphValues } from '@/hooks/useGraphValues';
 import type { MarkerPosition } from '@/three/SceneController';
 import { TopBar } from '@/components/common/TopBar';
-import { AmbientOverlays } from '../components/AmbientOverlays';
 import { ServerNameCard } from '../components/ServerNameCard';
 import { Hotspots } from '../components/Hotspots';
 import { TelemetryDock } from '../components/TelemetryDock';
@@ -36,8 +35,6 @@ export function DetailShell({ markers, g, live, status, offline, children }: Det
 
   return (
     <div className={styles.screen} data-screen-label="3D Detail">
-      <AmbientOverlays />
-
       {/* Hotspot markers projected onto the model. The controller supplies an
           empty list in the two-rack stage, so no markers show there. */}
       <Hotspots markers={markers} />

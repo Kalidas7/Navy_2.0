@@ -26,6 +26,9 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    // No public sourcemap in production builds: it shipped a ~3 MB .map exposing
+    // the full original source. 'hidden' still emits maps for error-reporting
+    // tools but omits the sourceMappingURL so browsers don't fetch/expose them.
+    sourcemap: 'hidden',
   },
 });
