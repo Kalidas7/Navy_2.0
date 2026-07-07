@@ -25,8 +25,7 @@ import {
   type FilterStatus,
   type HomeStyle,
 } from './store';
-import { offlineStates, isLiveHost } from '@/data/fleet';
-import { useSystemMetrics } from '@/app/SystemMetricsContext';
+import { offlineStates } from '@/data/fleet';
 import { api, ApiError } from '@/api/client';
 import { routes } from './routes';
 import { fmtClock } from '@/lib/clock';
@@ -73,9 +72,10 @@ export function AppProvider({
 }) {
   const [state, dispatch] = useReducer(appReducer, { autoRotateDefault: theme.autoRotateDefault }, makeInitialState);
 
-  // The shared live host feed (SSE). Its per-device `components` drive the
-  // localhost detail panels — one source of truth, no separate poll.
-  const liveMetrics = useSystemMetrics();
+  // NOTE: AppContext deliberately does NOT subscribe to the SSE feed. Live
+  // per-device data flows straight from SystemMetricsContext to the components
+  // that show it (via `useComponents()`), so a 1/second frame never re-renders
+  // this provider or its 22 useApp() consumers.
 
   /** The user's preferred auto-rotate setting, restored when closing a panel. */
   const userAutoRotateRef = useRef(theme.autoRotateDefault);
@@ -119,19 +119,16 @@ export function AppProvider({
     return () => controller.abort();
   }, []);
 
-  // ---- localhost component readouts: driven by the SSE feed (no polling) ----
-  // The per-device payload (fans/disks/NICs/power/status) now rides on each SSE
-  // frame alongside the scalar cards, so both come from the SAME source and can
-  // never disagree due to separate refresh cadences. When the localhost detail
-  // view is active, mirror every fresh frame into state.comp. No 5s poll, no
-  // second HTTP source. (Non-localhost racks have no live components — they keep
-  // the empty payload from ENTER_DETAIL and render "—".)
-  useEffect(() => {
-    if (state.route !== 'detail') return;
-    if (!isLiveHost(state.activeServerId)) return;
-    if (!liveMetrics.components) return;
-    dispatch({ type: 'SET_COMP', comp: liveMetrics.components });
-  }, [state.route, state.activeServerId, liveMetrics.components]);
+  // ---- localhost component readouts ----
+  // The per-device payload (fans/disks/NICs/power/status) rides on each SSE frame.
+  // Consumers (panels + notifications) read it DIRECTLY from SystemMetricsContext
+  // via `useComponents()`, so a fresh frame only re-renders the components that
+  // actually show device data — NOT every useApp() consumer. We deliberately do
+  // NOT mirror each frame into the reducer here: that per-second dispatch used to
+  // rebuild the whole AppContext value and re-render all 22 useApp() consumers.
+  // `state.comp` still holds the one-shot backend overlay from ENTER_DETAIL (real
+  // data for localhost / empty for other racks), used as the pre-first-frame
+  // fallback and as the source for non-live racks.
 
   const navigate = useNavigate();
 
