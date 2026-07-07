@@ -2,6 +2,7 @@
 import { useApp } from '@/app/AppContext';
 import { useGraphValues } from '@/hooks/useGraphValues';
 import { useSystemMetrics } from '@/app/SystemMetricsContext';
+import { useComponents } from '@/hooks/useComponents';
 import { StatCard } from '@/components/common/StatCard';
 import { NoData } from '@/components/common/NoData';
 import { colors } from '@/config/tokens';
@@ -16,7 +17,7 @@ export function FanPanel() {
   const live = useSystemMetrics();
   const offlineValues = useGraphValues();
   const g = isLocal ? live.g : offlineValues;
-  const fans = state.comp.fans;
+  const fans = useComponents().fans;
 
   return (
     <>

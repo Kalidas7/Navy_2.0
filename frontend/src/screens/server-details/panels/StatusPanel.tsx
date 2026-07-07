@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useApp } from '@/app/AppContext';
 import { useSystemMetrics } from '@/app/SystemMetricsContext';
+import { useComponents } from '@/hooks/useComponents';
 import { NoData } from '@/components/common/NoData';
 import { colors } from '@/config/tokens';
 import { isLiveHost } from '@/data/fleet';
@@ -48,7 +49,7 @@ function PerCoreBars({ perCore }: { perCore: number[] }) {
 
 export function StatusPanel() {
   const { state } = useApp();
-  const items = state.comp.statusItems;
+  const items = useComponents().statusItems;
   const isLocal = isLiveHost(state.activeServerId);
   const offline = !isLocal;
   const live = useSystemMetrics();

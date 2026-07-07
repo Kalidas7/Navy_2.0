@@ -2,6 +2,7 @@
 import { useApp } from '@/app/AppContext';
 import { useGraphValues } from '@/hooks/useGraphValues';
 import { useSystemMetrics } from '@/app/SystemMetricsContext';
+import { useComponents } from '@/hooks/useComponents';
 import { isLiveHost } from '@/data/fleet';
 import { ToggleChip } from '@/components/common/ToggleChip';
 import { SCREEN_TABS } from '@/config/components';
@@ -21,6 +22,7 @@ export function ScreenPanel() {
   const offlineValues = useGraphValues();
   const live = useSystemMetrics();
   const g = isLocal ? live.g : offlineValues;
+  const comp = useComponents();
   const offline = !isLocal;
   const view = state.screenView;
 
@@ -41,8 +43,8 @@ export function ScreenPanel() {
 
       {view === 'system' && <SystemView g={g} offline={offline} cpuHist={live.cpuHist} />}
       {view === 'network' && <NetworkView g={g} offline={offline} />}
-      {view === 'radar' && <RadarView contacts={state.comp.contacts} />}
-      {view === 'power' && <PowerView g={g} rails={state.comp.psuRails} offline={offline} />}
+      {view === 'radar' && <RadarView contacts={comp.contacts} />}
+      {view === 'power' && <PowerView g={g} rails={comp.psuRails} offline={offline} />}
       {view === 'logs' && <LogsView logs={state.logs} />}
     </>
   );

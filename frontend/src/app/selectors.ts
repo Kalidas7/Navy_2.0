@@ -7,7 +7,7 @@ import { statusMeta } from '@/config/tokens';
 import { STATUS_PRIORITY } from './store';
 import { isLiveHost } from '@/data/fleet';
 import type { AppState, FilterStatus } from './store';
-import type { Server, RackStatus, CompStates } from '@/types';
+import type { Server, RackStatus, CompStates, StatusItem } from '@/types';
 
 export interface FleetServerVM extends Server {
   statusColor: string;

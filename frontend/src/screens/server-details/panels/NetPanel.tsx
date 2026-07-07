@@ -1,6 +1,7 @@
 /** Network Ports panel: real network interfaces (localhost) with live up/down
  *  throughput and a visual connected/disconnected indicator. */
 import { useApp } from '@/app/AppContext';
+import { useComponents } from '@/hooks/useComponents';
 import { NoData } from '@/components/common/NoData';
 import { colors } from '@/config/tokens';
 import { isLiveHost } from '@/data/fleet';
@@ -34,7 +35,7 @@ function LinkIcon({ up }: { up: boolean }) {
 
 export function NetPanel() {
   const { state } = useApp();
-  const ports = state.comp.netPorts;
+  const ports = useComponents().netPorts;
   const offline = !isLiveHost(state.activeServerId);
 
   return (

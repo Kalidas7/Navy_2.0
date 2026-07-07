@@ -69,21 +69,21 @@ export function TelemetryDock({
       <DockStat
         label={live ? 'PWR DRAW' : 'RACK DRAW'}
         value={offline ? '—' : `${g.drawNow} W`}
-        color={colors.amber}
+        color={colors.textHi}
         paddingRight={18}
       />
       {/* Real host `fanTempNow`: >0 RPM, 0 = present-but-idle ("IDLE"), -1 = no sensor ("—"). */}
       <DockStat
         label={live ? 'FAN' : 'INTAKE'}
         value={offline || g.fanTempNow < 0 ? '—' : g.fanTempNow === 0 ? 'IDLE' : `${g.fanTempNow} RPM`}
-        color={colors.accent}
+        color={colors.textHi}
         paddingX={18}
       />
       {/* UPLINK: real up-throughput for the host, static rack speed otherwise. */}
       <DockStat
         label={live ? 'NET ↑' : 'UPLINK'}
         value={offline ? '—' : live ? `${g.netOutNow} Mb/s` : '10G'}
-        color={colors.blue}
+        color={colors.textHi}
         paddingX={18}
       />
 
