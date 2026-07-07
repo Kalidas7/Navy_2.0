@@ -30,7 +30,9 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
         if (!def) return null;
         const st = compStates[m.key as CompKey] ?? 'ok';
         const col = compColor(st);
-        const active = sel === m.key;
+        // NB: no "selected" styling here — this whole component returns null when
+        // a component is selected (see the early return above), so markers only
+        // ever render in the unselected state.
         const animation =
           st === 'crit' ? 'rkpulse 1.4s infinite' : st === 'warn' ? 'rkpulseW 1.8s infinite' : 'none';
         // Left-side markers put the label to the LEFT of the dot (row-reverse)
@@ -85,7 +87,7 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
                 border: `1.6px solid ${col}`,
                 color: col,
                 boxShadow: '0 2px 8px rgba(16,24,40,.12)',
-                transform: active ? 'scale(1.18)' : 'scale(1)',
+                transform: 'scale(1)',
                 animation,
               }}
             >
@@ -102,14 +104,14 @@ export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
                   padding: '5px 10px',
                   borderRadius: 6,
                   background: colors.panelBg,
-                  border: `1px solid ${active ? col : colors.borderInput}`,
+                  border: `1px solid ${colors.borderInput}`,
                   boxShadow: '0 2px 8px rgba(16,24,40,.08)',
                   fontSize: 11.5,
                   letterSpacing: '.1em',
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
                   pointerEvents: m.visible && m.reveal > 0.9 ? 'auto' : 'none',
-                  color: active ? col : colors.textMid,
+                  color: colors.textMid,
                 }}
               >
                 {def.label}

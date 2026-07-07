@@ -4,13 +4,13 @@
  * State model:
  *   route, homeStyle, query, filterStatus, servers, activeServerId,
  *   selectedComp, screenView, autoRotate, exploded, scene{Loading,Error},
- *   loadPct, clock, comp(data), logs.
+ *   loadPct, comp(data), logs.
  *
  * `comp`/`logs` start empty and are overlaid with the backend's real payload on
  * entering a detail view. The localhost rack's live scalars come from the SSE
- * feed (SystemMetricsContext), not from here.
+ * feed (SystemMetricsContext), not from here. The wall clock lives in its own
+ * ClockContext (see ClockProvider), so its 1s tick doesn't churn this reducer.
  */
-import { fmtClock } from '@/lib/clock';
 import { makeInitialServers, EMPTY_COMP } from '@/data/fleet';
 import type {
   Server,
@@ -60,7 +60,6 @@ export interface AppState {
   sceneLoading: boolean;
   sceneError: string | null;
   loadPct: number;
-  clock: string;
   comp: CompData;
   logs: LogEntry[];
 }
@@ -83,7 +82,6 @@ export type Action =
   | { type: 'SCENE_LOADING'; value: boolean }
   | { type: 'SCENE_ERROR'; error: string | null }
   | { type: 'LOAD_PCT'; pct: number }
-  | { type: 'SET_CLOCK'; clock: string }
   | { type: 'SET_SERVERS'; servers: Server[] }
   | { type: 'SET_COMP'; comp: CompData }
   | { type: 'SET_LOGS'; logs: LogEntry[] };
@@ -113,7 +111,6 @@ export function makeInitialState(opts: InitOptions): AppState {
     sceneLoading: true,
     sceneError: null,
     loadPct: 0,
-    clock: fmtClock(),
     // Empty until the backend overlays real data on entering a detail view.
     comp: EMPTY_COMP,
     logs: [],
@@ -200,8 +197,6 @@ export function appReducer(state: AppState, action: Action): AppState {
       return { ...state, sceneError: action.error, sceneLoading: false };
     case 'LOAD_PCT':
       return { ...state, loadPct: action.pct };
-    case 'SET_CLOCK':
-      return { ...state, clock: action.clock };
     case 'SET_SERVERS':
       return { ...state, servers: action.servers };
     case 'SET_COMP':

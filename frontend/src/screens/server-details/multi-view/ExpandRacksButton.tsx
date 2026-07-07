@@ -1,21 +1,30 @@
 /**
  * Close (✕) control for the datacenter (localhost-2) single-rack stage. Floats
- * at the TOP-LEFT of the 3D view; returns from the single rack to the two-rack
- * Stage 1 view. Lives under multi-view/ because it is specific to the two-stage
- * datacenter flow (no other rack renders it).
+ * at the TOP-LEFT of the 3D view. Acts as a single "one step back" control:
+ * while a component is focused (zoomed in), the first click DESELECTS it and
+ * returns to the single-server view where the component was picked; a second
+ * click (no component focused) expands back to the two-rack Stage 1. Without
+ * this, closing from a zoomed component jumped straight past the single-rack
+ * view back to both racks. Lives under multi-view/ because it is specific to
+ * the two-stage datacenter flow (no other rack renders it).
  */
 import { useApp } from '@/app/AppContext';
 import { colors } from '@/config/tokens';
 
 export function ExpandRacksButton() {
-  const { expandRacks } = useApp();
+  const { state, closeMenu, expandRacks } = useApp();
+  const hasSelection = !!state.selectedComp;
+  // Step back one level: focused component → single-server view first, then
+  // single rack → both racks.
+  const onClick = hasSelection ? closeMenu : expandRacks;
+  const label = hasSelection ? 'Back to server view' : 'Back to both servers';
 
   return (
     <button
       type="button"
-      title="Back to both servers"
-      aria-label="Back to both servers"
-      onClick={expandRacks}
+      title={label}
+      aria-label={label}
+      onClick={onClick}
       data-rk-hover="accent"
       style={{
         // Top-left, just below the 52px top bar; clears the vertically-centered
