@@ -5,7 +5,6 @@
 import { spark } from '@/lib/sparkline';
 import { statusMeta } from '@/config/tokens';
 import { STATUS_PRIORITY } from './store';
-import { isLiveHost } from '@/data/fleet';
 import type { AppState, FilterStatus } from './store';
 import type { Server, RackStatus, CompStates, StatusItem } from '@/types';
 
@@ -38,7 +37,6 @@ export function selectFleet(state: AppState): FleetServerVM[] {
   list.sort((a, b) => (STATUS_PRIORITY[a.status] ?? 9) - (STATUS_PRIORITY[b.status] ?? 9));
   return list.map((s) => {
     const m = statusMeta(s.status);
-    const isLocal = isLiveHost(s.id);
     return {
       ...s,
       statusColor: m.color,
@@ -47,12 +45,16 @@ export function selectFleet(state: AppState): FleetServerVM[] {
       statusBg: m.bg,
       barColor: s.status === 'online' ? 'transparent' : m.color,
       spark: spark(s.buf, 100, 22, 2),
-      // localhost's real values come from the SSE stream (see RackCard). The
-      // fleet row itself is a cheap 0-placeholder, so show "—" until the first
-      // live frame fills it — never a misleading "0%". Non-local racks: always "—".
-      cpuText: isLocal && s.cpu ? `${s.cpu}%` : '—',
-      ramText: isLocal && s.ram ? `${s.ram}%` : '—',
-      tempText: isLocal && s.temp ? `${s.temp}°` : '—',
+      // These are the FALLBACK readouts, shown only before the first live SSE
+      // frame lands (localhost) or for racks with no live sensor feed at all.
+      // They are always "—": the fleet row's cpu/ram/temp are cheap 0-placeholders
+      // with no real reading behind them, so a real value would be a fabrication.
+      // The live views (RackCard/RackRow) override these from the SSE stream once
+      // it's flowing — and a genuine 0% reading shows there as "0%", not "—", so
+      // "missing" and "zero" stay distinct (the data-honesty rule).
+      cpuText: '—',
+      ramText: '—',
+      tempText: '—',
     };
   });
 }

@@ -11,6 +11,7 @@ from .views import (
     RackComponentsView,
     RackLogsView,
     RackTelemetryView,
+    SystemHistoryView,
     SystemSnapshotView,
     SystemStreamView,
 )
@@ -23,4 +24,6 @@ urlpatterns = [
     # Real host-machine metrics (this PC), not the simulated fleet.
     path("system", SystemSnapshotView.as_view(), name="system-snapshot"),
     path("system/stream", SystemStreamView.as_view(), name="system-stream"),
+    # Persisted CPU/RAM/temp history backing the 1D/7D/1M graphs.
+    path("system/history", SystemHistoryView.as_view(), name="system-history"),
 ]

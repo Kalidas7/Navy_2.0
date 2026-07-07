@@ -36,6 +36,17 @@ export interface LiveMetrics {
   g: GraphValues;
   /** Raw CPU-% history (0–100, up to 48 samples) for fixed-scale graphs. */
   cpuHist: number[];
+  /**
+   * Raw ring-buffer histories (oldest→newest, up to 48 samples) for the live
+   * graphs' hover tooltips — the polyline strings alone can't be reversed back
+   * into values, so the graphs read these to show per-sample readouts.
+   */
+  hist: {
+    cpu: number[];
+    ram: number[];
+    netIn: number[];
+    netOut: number[];
+  };
   /** Per-device component payload from the latest SSE frame, or null before it. */
   components: CompData | null;
   /**
@@ -110,6 +121,9 @@ export function useSystemMetricsSource(): LiveMetrics {
     const drawW = powerReal
       ? Math.round(raw.powerW as number)
       : Math.round(8 + (raw.cpu.pct / 100) * 32 + (raw.gpu?.powerW ?? 0));
+    // Net polylines: compute once, reuse for both the line and its filled area.
+    const netInPts = spark(b.netIn, 100, 38, 3);
+    const netOutPts = spark(b.netOut, 100, 38, 3);
     return {
       cpuNow: Math.round(raw.cpu.pct),
       ramNow: Math.round(raw.mem.pct),
@@ -120,10 +134,12 @@ export function useSystemMetricsSource(): LiveMetrics {
       ramPts: spark(b.ram, 100, 38, 3),
       netInNow: raw.net.rxMbps.toFixed(1),
       netOutNow: raw.net.txMbps.toFixed(1),
-      netInPts: spark(b.netIn, 100, 38, 3),
-      netOutPts: spark(b.netOut, 100, 38, 3),
-      netInArea: spark(b.netIn, 100, 38, 3) + ' 100,38 0,38',
-      netOutArea: spark(b.netOut, 100, 38, 3) + ' 100,38 0,38',
+      // Compute each polyline once and reuse it for the matching filled area
+      // (was calling spark() twice per series — same input, wasted work).
+      netInPts: netInPts,
+      netOutPts: netOutPts,
+      netInArea: netInPts + ' 100,38 0,38',
+      netOutArea: netOutPts + ' 100,38 0,38',
       pktNow: raw.net.rxPps + raw.net.txPps,
       latNow: (raw.cpu.load?.[0] ?? 0).toFixed(2),
       sessNow: raw.topCpu.length,
@@ -165,8 +181,17 @@ export function useSystemMetricsSource(): LiveMetrics {
   // Snapshot the raw CPU-% ring buffer each frame (fixed 0–100 scale graphs).
   const cpuHist = useMemo<number[]>(() => buf.current.cpu.slice(), [raw]);
 
+  // Snapshot the buffers the live graphs' hover tooltips read (copied so the
+  // consuming graphs get a stable array reference per frame).
+  const hist = useMemo<LiveMetrics['hist']>(() => ({
+    cpu: buf.current.cpu.slice(),
+    ram: buf.current.ram.slice(),
+    netIn: buf.current.netIn.slice(),
+    netOut: buf.current.netOut.slice(),
+  }), [raw]);
+
   // Per-device components ride along on each SSE frame (single source of truth).
   const components = useMemo<CompData | null>(() => raw?.components ?? null, [raw]);
 
-  return { raw, status, g, card, cpuHist, components };
+  return { raw, status, g, card, cpuHist, hist, components };
 }

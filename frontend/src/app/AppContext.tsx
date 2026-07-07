@@ -28,7 +28,6 @@ import {
 import { offlineStates } from '@/data/fleet';
 import { api, ApiError } from '@/api/client';
 import { routes } from './routes';
-import { fmtClock } from '@/lib/clock';
 import { defaultTheme, type ThemeConfig } from '@/config/theme';
 import type { CompKey, CompStates, ScreenView } from '@/types';
 
@@ -89,13 +88,9 @@ export function AppProvider({
   // here shows a neutral (all-"ok") set so nothing invents an alert.
   const compStates = useMemo<CompStates>(() => offlineStates(), []);
 
-  // ---- wall clock (1000ms) ----
-  useEffect(() => {
-    const clockTimer = setInterval(() => {
-      dispatch({ type: 'SET_CLOCK', clock: fmtClock() });
-    }, 1000);
-    return () => clearInterval(clockTimer);
-  }, []);
+  // The 1s wall clock lives in its own ClockContext (see ClockProvider), NOT in
+  // this reducer: keeping it here would rebuild the AppContext value every second
+  // and re-render every useApp() consumer. TopBar reads it via useClock().
 
   // ---- hydrate the fleet from the Django backend (once, on mount) ----
   // The initial state carries only a placeholder localhost rack; this replaces

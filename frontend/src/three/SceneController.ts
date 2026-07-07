@@ -74,6 +74,14 @@ export class SceneController {
   private controls!: OrbitControls;
   private pmrem!: THREE.PMREMGenerator;
   private ro?: ResizeObserver;
+  /**
+   * GPU resources created outside the model groups, held so dispose() can free
+   * them. The env render target (from PMREM) and the grid's geometry/material
+   * are NOT reached by the rootGroup/twinGroup walk, so without these refs they
+   * leaked VRAM on every scene teardown (mount/unmount + model swap).
+   */
+  private envRT?: THREE.WebGLRenderTarget;
+  private grid?: THREE.GridHelper;
 
   private meshes: MeshState[] = [];
   private hotspots: HotspotState[] = [];
@@ -166,7 +174,11 @@ export class SceneController {
     this.scene = scene;
 
     this.pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = this.pmrem.fromScene(new RoomEnvironment(), SCENE.envIntensity).texture;
+    // fromScene() builds a WebGLRenderTarget on the GPU; its .texture becomes the
+    // scene environment map. Keep the target so dispose() can free it — pmrem's
+    // own dispose() does NOT release this output target.
+    this.envRT = this.pmrem.fromScene(new RoomEnvironment(), SCENE.envIntensity);
+    scene.environment = this.envRT.texture;
 
     const camera = new THREE.PerspectiveCamera(SCENE.camera.fov, w / h, SCENE.camera.near, SCENE.camera.far);
     camera.position.set(...SCENE.camera.position);
@@ -210,6 +222,7 @@ export class SceneController {
     gridMat.opacity = SCENE.grid.opacity;
     grid.position.y = 0;
     scene.add(grid);
+    this.grid = grid;  // held so dispose() frees its geometry + material
 
     // hotspot world positions
     this.hotspots = COMPS.map((c) => ({ key: c.key, v: new THREE.Vector3(c.pos[0], c.pos[1], c.pos[2]) }));
@@ -853,6 +866,17 @@ export class SceneController {
     }
     this.rootGroup = null;
     this.twinGroup = null;
+
+    // Free the GPU resources created outside the model groups (see fields). The
+    // group walk above never reaches these, so they must be disposed by hand.
+    if (this.grid) {
+      this.grid.geometry.dispose();
+      const gm = this.grid.material;
+      (Array.isArray(gm) ? gm : [gm]).forEach((m) => m.dispose());
+      this.grid = undefined;
+    }
+    this.envRT?.dispose();  // the environment-map render target (from PMREM)
+    this.envRT = undefined;
 
     this.controls?.dispose();
     this.pmrem?.dispose();

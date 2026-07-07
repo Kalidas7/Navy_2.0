@@ -11,6 +11,7 @@
  * bar (see ServerNameCard), not inside the bar itself.
  */
 import { useApp } from '@/app/AppContext';
+import { useClock } from '@/app/ClockContext';
 import type { FilterChipVM } from '@/app/selectors';
 import { colors } from '@/config/tokens';
 import type { FilterStatus } from '@/app/store';
@@ -66,7 +67,9 @@ export function TopBar({ variant, chips = [] }: TopBarProps) {
           background: 'transparent',
           border: 'none',
           padding: 0,
-          fontSize: 16,
+          // Bumped from 16 so the heading reads as a proper title next to the
+          // wide search box, rather than looking undersized beside it.
+          fontSize: 19,
           fontWeight: 700,
           lineHeight: 1,
           letterSpacing: '.02em',
@@ -81,8 +84,8 @@ export function TopBar({ variant, chips = [] }: TopBarProps) {
         Console
       </button>
 
-      {/* Search — fixed 36px height, matching the "Console" heading so the two
-          line up cleanly. */}
+      {/* Search — slightly shorter than the 36px heading row so the box reads a
+          touch more compact; the input inside tracks this via height:100%. */}
       <div
         style={{
           display: 'flex',
@@ -91,7 +94,7 @@ export function TopBar({ variant, chips = [] }: TopBarProps) {
           flex: 1,
           minWidth: 200,
           maxWidth: 360,
-          height: 36,
+          height: 32,
           padding: '0 12px',
           borderRadius: 8,
           border: `1px solid ${colors.borderInput}`,
@@ -151,10 +154,23 @@ export function TopBar({ variant, chips = [] }: TopBarProps) {
           Current/All tabs). See NotificationsMenu. */}
       <NotificationsMenu variant={variant} />
 
-      {/* Clock — far right */}
-      <div className="mono" style={{ fontSize: 12, color: colors.textMid2, letterSpacing: '.08em' }}>
-        {state.clock}
-      </div>
+      {/* Clock — far right. Its own leaf so the 1s tick re-renders ONLY this
+          text node, not the whole TopBar (search box, filters, alerts, …). */}
+      <Clock />
+    </div>
+  );
+}
+
+/**
+ * The wall-clock readout, isolated as its own leaf. It is the ONLY thing that
+ * subscribes to the 1s clock tick (useClock), so each second re-renders just
+ * this text node — the rest of TopBar renders once and stays put.
+ */
+function Clock() {
+  const clock = useClock();
+  return (
+    <div className="mono" style={{ fontSize: 12, color: colors.textMid2, letterSpacing: '.08em' }}>
+      {clock}
     </div>
   );
 }

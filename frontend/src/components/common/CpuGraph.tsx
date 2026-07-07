@@ -10,7 +10,9 @@
  *
  * Pure presentation: caller passes the raw 0–100 history (oldest→newest).
  */
+import { useMemo } from 'react';
 import { colors } from '@/config/tokens';
+import { useGraphHover, HoverCrosshair, HoverTooltip, relTime, type HoverSample } from './graphHover';
 
 interface CpuGraphProps {
   /** raw CPU-% samples, 0–100, oldest first */
@@ -39,6 +41,18 @@ export function CpuGraph({ hist, now, height = 92 }: CpuGraphProps) {
   const ySafe = yFor(SAFE);
   const yWarn = yFor(WARN);
 
+  // Hover: value + relative age (buffer is 1 sample/sec, newest last).
+  const hoverSamples = useMemo<HoverSample[] | null>(() => {
+    if (!hist.length) return null;
+    const last = data.length - 1;
+    return data.map((v, i) => ({
+      x: (i / Math.max(1, last)) * W,
+      caption: relTime(last - i, 1),
+      series: [{ color: colors.accent, value: `${Math.round(v)}%`, y: yFor(v) }],
+    }));
+  }, [hist, data]);
+  const hover = useGraphHover(hoverSamples, W);
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
@@ -51,20 +65,25 @@ export function CpuGraph({ hist, now, height = 92 }: CpuGraphProps) {
         </span>
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: '100%', height, display: 'block' }}>
-        {/* zone bands (drawn back-to-front): safe green, warn amber, high red */}
-        <rect x="0" y={ySafe} width={W} height={H - ySafe} fill={colors.accent} opacity={0.1} />
-        <rect x="0" y={yWarn} width={W} height={ySafe - yWarn} fill={colors.amber} opacity={0.12} />
-        <rect x="0" y="0" width={W} height={yWarn} fill={colors.red} opacity={0.1} />
+      <div style={{ position: 'relative', cursor: 'crosshair' }} onMouseMove={hover.onMove} onMouseLeave={hover.onLeave}>
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: '100%', height, display: 'block' }}>
+          {/* zone bands (drawn back-to-front): safe green, warn amber, high red */}
+          <rect x="0" y={ySafe} width={W} height={H - ySafe} fill={colors.accent} opacity={0.1} />
+          <rect x="0" y={yWarn} width={W} height={ySafe - yWarn} fill={colors.amber} opacity={0.12} />
+          <rect x="0" y="0" width={W} height={yWarn} fill={colors.red} opacity={0.1} />
 
-        {/* threshold lines */}
-        <line x1="0" y1={ySafe} x2={W} y2={ySafe} stroke={colors.accent} strokeWidth={0.4} strokeDasharray="2 2" opacity={0.6} />
-        <line x1="0" y1={yWarn} x2={W} y2={yWarn} stroke={colors.amber} strokeWidth={0.4} strokeDasharray="2 2" opacity={0.6} />
+          {/* threshold lines */}
+          <line x1="0" y1={ySafe} x2={W} y2={ySafe} stroke={colors.accent} strokeWidth={0.4} strokeDasharray="2 2" opacity={0.6} />
+          <line x1="0" y1={yWarn} x2={W} y2={yWarn} stroke={colors.amber} strokeWidth={0.4} strokeDasharray="2 2" opacity={0.6} />
 
-        {/* CPU trace */}
-        <polygon points={area} fill={colors.accent} opacity={0.14} />
-        <polyline points={line} fill="none" stroke={colors.accent} strokeWidth={1.1} strokeLinejoin="round" strokeLinecap="round" />
-      </svg>
+          {/* CPU trace */}
+          <polygon points={area} fill={colors.accent} opacity={0.14} />
+          <polyline points={line} fill="none" stroke={colors.accent} strokeWidth={1.1} strokeLinejoin="round" strokeLinecap="round" />
+
+          <HoverCrosshair hover={hover} viewH={H} />
+        </svg>
+        <HoverTooltip hover={hover} />
+      </div>
 
       {/* legend */}
       <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>

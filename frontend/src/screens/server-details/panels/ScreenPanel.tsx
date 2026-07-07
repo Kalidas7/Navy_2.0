@@ -41,8 +41,12 @@ export function ScreenPanel() {
         ))}
       </div>
 
-      {view === 'system' && <SystemView g={g} offline={offline} cpuHist={live.cpuHist} />}
-      {view === 'network' && <NetworkView g={g} offline={offline} />}
+      {view === 'system' && (
+        <SystemView g={g} offline={offline} cpuHist={live.cpuHist} hist={isLocal ? live.hist : undefined} />
+      )}
+      {view === 'network' && (
+        <NetworkView g={g} offline={offline} hist={isLocal ? live.hist : undefined} />
+      )}
       {view === 'radar' && <RadarView contacts={comp.contacts} />}
       {view === 'power' && <PowerView g={g} rails={comp.psuRails} offline={offline} />}
       {view === 'logs' && <LogsView logs={state.logs} />}
