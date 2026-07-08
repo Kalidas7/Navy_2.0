@@ -7,7 +7,7 @@
  * forwards to Django. Swapping backends or environments is a config change here,
  * not a change scattered across components.
  */
-import type { Server, CompData, LogEntry, CompStates } from '@/types';
+import type { Server, CompData, LogEntry } from '@/types';
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '');
 
@@ -38,23 +38,9 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
   return (await res.json()) as T;
 }
 
-/** Snapshot returned by the telemetry endpoint. */
-export interface TelemetrySnapshot {
-  id: string;
-  cpu: number;
-  ram: number;
-  temp: number;
-  buf: number[];
-  states: CompStates;
-}
-
 export const api = {
   /** GET /api/fleet — the full fleet of racks. */
   fleet: (signal?: AbortSignal) => getJson<Server[]>('/fleet', signal),
-
-  /** GET /api/racks/:id/telemetry — current readouts + subsystem health. */
-  telemetry: (id: string, signal?: AbortSignal) =>
-    getJson<TelemetrySnapshot>(`/racks/${encodeURIComponent(id)}/telemetry`, signal),
 
   /** GET /api/racks/:id/components — drive bays, fans, ports, PSU, sonar, … */
   components: (id: string, signal?: AbortSignal) =>

@@ -46,42 +46,6 @@ def rack_components(server_id: str) -> dict | None:
     }
 
 
-def rack_telemetry(server_id: str) -> dict | None:
-    """
-    A telemetry snapshot for one rack: the scalar readouts plus the derived
-    subsystem health states.
-
-    localhost returns a fresh REAL reading (psutil); simulated racks return
-    their zeroed row (cpu/ram/temp = 0 → UI shows "—").
-    """
-    server = data.get_server(server_id)
-    if server is None:
-        return None
-    if data.is_live_host(server_id):
-        from . import sysmetrics
-
-        snap = sysmetrics.snapshot()
-        return {
-            "id": server_id,
-            "cpu": int(round(snap["cpu"]["pct"])),
-            "ram": int(round(snap["mem"]["pct"])),
-            "temp": int(round(snap["cpu"]["tempC"])) if snap["cpu"]["tempC"] else 0,
-            "buf": [],
-            "states": {
-                "screen": "ok", "status": "ok", "drives": "ok",
-                "net": "ok", "fan": "ok", "power": "ok",
-            },
-        }
-    return {
-        "id": server["id"],
-        "cpu": server["cpu"],
-        "ram": server["ram"],
-        "temp": server["temp"],
-        "buf": server["buf"],
-        "states": data.states_for(server["status"]),
-    }
-
-
 def rack_logs(server_id: str) -> list[dict] | None:
     """
     Log backlog for one rack.
