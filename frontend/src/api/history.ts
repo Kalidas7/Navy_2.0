@@ -9,6 +9,9 @@
  * This feeds the LINE GRAPHS only — the live scalar readouts still come from the
  * SSE stream, so a range change redraws the graph and nothing else.
  */
+import { IS_WEB_DEMO } from '@/config/dataMode';
+import { simHistory } from '@/api/simulator';
+
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '');
 
 /** One bucket-averaged point. Any metric with no readings in the bucket is null (a gap). */
@@ -64,6 +67,10 @@ export async function fetchHistory(
   range: HistoryRange,
   opts?: { from?: number; to?: number; signal?: AbortSignal },
 ): Promise<HistorySeries> {
+  // web-demo mode: synthesize the series client-side, no network.
+  if (IS_WEB_DEMO) {
+    return simHistory(range, { from: opts?.from, to: opts?.to });
+  }
   const qs = new URLSearchParams({ range });
   if (range === 'custom' && opts?.from != null && opts?.to != null) {
     qs.set('from', String(opts.from));

@@ -14,6 +14,8 @@
  * Shapes mirror `backend/fleet/sysmetrics.py` field-for-field.
  */
 import type { CompData } from '@/types';
+import { IS_WEB_DEMO } from '@/config/dataMode';
+import { simulateSystem } from '@/api/simulator';
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '');
 
@@ -56,7 +58,7 @@ export interface SystemMetrics {
 
 export type SystemStatus = 'connecting' | 'live' | 'polling' | 'error';
 
-interface SubscribeHandlers {
+export interface SubscribeHandlers {
   onData: (m: SystemMetrics) => void;
   onStatus?: (s: SystemStatus) => void;
 }
@@ -64,8 +66,16 @@ interface SubscribeHandlers {
 /**
  * Subscribe to live host metrics. Returns an unsubscribe function that tears
  * down whichever transport is active. Call it from a React effect's cleanup.
+ *
+ * In web-demo mode (VITE_DATA_MODE=web) this delegates to the frontend-only
+ * simulator instead of opening any network connection, so the build is fully
+ * backend-free. See config/dataMode.ts and api/simulator.ts.
  */
-export function subscribeSystem({ onData, onStatus }: SubscribeHandlers): () => void {
+export function subscribeSystem(handlers: SubscribeHandlers): () => void {
+  if (IS_WEB_DEMO) {
+    return simulateSystem(handlers);
+  }
+  const { onData, onStatus } = handlers;
   let closed = false;
   let es: EventSource | null = null;
   let pollTimer: ReturnType<typeof setInterval> | null = null;

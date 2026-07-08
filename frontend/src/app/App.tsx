@@ -18,6 +18,7 @@ import { useApp } from './AppContext';
 import { routes } from './routes';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { FleetView } from '@/screens/home';
+import { DemoBanner } from '@/components/common/DemoBanner';
 
 // Heavy, 3D-only. Split into its own chunk so the home route stays light.
 const Scene3DLayer = lazy(() => import('@/screens/server-details/Scene3DLayer'));
@@ -58,6 +59,7 @@ export function App() {
 
   return (
     <div className="rk-app">
+      <DemoBanner />
       <Routes>
         <Route path={routes.fleet} element={<RouteSync view="home" />} />
         <Route path={routes.serverDetailPattern} element={<RouteSync view="detail" />} />

@@ -17,7 +17,7 @@ function Metric({ label, value, color }: { label: string; value: string; color: 
       <div className="mono" style={{ fontSize: 8.5, color: colors.textMuted2 }}>
         {label}
       </div>
-      <div className="cond" style={{ fontSize: 16, color }}>
+      <div className="cond" style={{ fontSize: 16, fontWeight: 700, color }}>
         {value}
       </div>
     </div>
@@ -93,8 +93,8 @@ export function RackRow({ server }: { server: FleetServerVM }) {
         {server.role}
       </div>
       <div style={{ display: 'flex', gap: 16, flexShrink: 0 }}>
-        <Metric label="CPU" value={cpuText} color={colors.accent} />
-        <Metric label="MEM" value={ramText} color={colors.blue} />
+        <Metric label="CPU" value={cpuText} color={colors.textBody} />
+        <Metric label="MEM" value={ramText} color={colors.textBody} />
         <Metric label="TEMP" value={tempText} color={colors.textBody} />
       </div>
       <div style={{ flexShrink: 0 }}>
@@ -110,12 +110,6 @@ export function RackRow({ server }: { server: FleetServerVM }) {
           format={(v) => `${Math.round(v)}% CPU`}
         />
       </div>
-      <span
-        className="cond"
-        style={{ fontSize: 13, color: colors.accent, letterSpacing: '.08em', flexShrink: 0 }}
-      >
-        OPEN ▸
-      </span>
     </div>
   );
 }

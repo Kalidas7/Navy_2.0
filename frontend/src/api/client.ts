@@ -8,6 +8,8 @@
  * not a change scattered across components.
  */
 import type { Server, CompData, LogEntry } from '@/types';
+import { IS_WEB_DEMO } from '@/config/dataMode';
+import { simFleet, simComponents, simLogs } from '@/api/simulator';
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '');
 
@@ -39,14 +41,19 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
 }
 
 export const api = {
-  /** GET /api/fleet — the full fleet of racks. */
-  fleet: (signal?: AbortSignal) => getJson<Server[]>('/fleet', signal),
+  /** GET /api/fleet — the full fleet of racks. (web-demo: simulated) */
+  fleet: (signal?: AbortSignal) =>
+    IS_WEB_DEMO ? Promise.resolve(simFleet()) : getJson<Server[]>('/fleet', signal),
 
-  /** GET /api/racks/:id/components — drive bays, fans, ports, PSU, sonar, … */
+  /** GET /api/racks/:id/components — drive bays, fans, ports, PSU, sonar, … (web-demo: simulated) */
   components: (id: string, signal?: AbortSignal) =>
-    getJson<CompData>(`/racks/${encodeURIComponent(id)}/components`, signal),
+    IS_WEB_DEMO
+      ? Promise.resolve(simComponents())
+      : getJson<CompData>(`/racks/${encodeURIComponent(id)}/components`, signal),
 
-  /** GET /api/racks/:id/logs — mission/system log backlog. */
+  /** GET /api/racks/:id/logs — mission/system log backlog. (web-demo: simulated) */
   logs: (id: string, signal?: AbortSignal) =>
-    getJson<LogEntry[]>(`/racks/${encodeURIComponent(id)}/logs`, signal),
+    IS_WEB_DEMO
+      ? Promise.resolve(simLogs())
+      : getJson<LogEntry[]>(`/racks/${encodeURIComponent(id)}/logs`, signal),
 };
