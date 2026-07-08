@@ -95,15 +95,6 @@ class CompDataSerializer(serializers.Serializer):
     contacts = SonarContactSerializer(many=True)
 
 
-class TelemetrySerializer(serializers.Serializer):
-    id = serializers.CharField()
-    cpu = serializers.IntegerField()
-    ram = serializers.IntegerField()
-    temp = serializers.IntegerField()
-    buf = serializers.ListField(child=serializers.FloatField())
-    states = serializers.DictField(child=serializers.CharField())
-
-
 class LogEntrySerializer(serializers.Serializer):
     id = serializers.CharField()
     t = serializers.CharField()

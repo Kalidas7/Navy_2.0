@@ -10,7 +10,6 @@ from .views import (
     FleetListView,
     RackComponentsView,
     RackLogsView,
-    RackTelemetryView,
     SystemHistoryView,
     SystemSnapshotView,
     SystemStreamView,
@@ -18,7 +17,6 @@ from .views import (
 
 urlpatterns = [
     path("fleet", FleetListView.as_view(), name="fleet"),
-    path("racks/<str:rack_id>/telemetry", RackTelemetryView.as_view(), name="rack-telemetry"),
     path("racks/<str:rack_id>/components", RackComponentsView.as_view(), name="rack-components"),
     path("racks/<str:rack_id>/logs", RackLogsView.as_view(), name="rack-logs"),
     # Real host-machine metrics (this PC), not the simulated fleet.

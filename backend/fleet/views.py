@@ -23,7 +23,6 @@ from .serializers import (
     CompDataSerializer,
     LogEntrySerializer,
     ServerSerializer,
-    TelemetrySerializer,
 )
 
 # --- SSE stream concurrency guard -------------------------------------------
@@ -50,16 +49,6 @@ class FleetListView(APIView):
     def get(self, _request):
         data = services.list_fleet()
         return Response(ServerSerializer(data, many=True).data)
-
-
-class RackTelemetryView(APIView):
-    """GET /api/racks/<id>/telemetry — current readouts + subsystem health."""
-
-    def get(self, _request, rack_id: str):
-        payload = services.rack_telemetry(rack_id)
-        if payload is None:
-            return Response({"detail": "rack not found"}, status=status.HTTP_404_NOT_FOUND)
-        return Response(TelemetrySerializer(payload).data)
 
 
 class RackComponentsView(APIView):
