@@ -9,20 +9,34 @@
  * ships the 3D engine in its initial bundle. Keep all three.js-touching imports
  * BEHIND this file — importing `useScene`/`SceneController`/`three` from an
  * eagerly-loaded module would defeat the split.
+ *
+ * The desktop and mobile detail views swap HERE, above `DetailView`, so the
+ * scene, its controller, and its markers are created exactly once and shared.
+ * The mobile view is itself lazy so a desktop session never fetches it.
  */
-import { useRef } from 'react';
+import { Suspense, lazy, useRef } from 'react';
 import { useScene } from '@/three/useScene';
 import { SceneCanvas } from '@/components/layout/SceneCanvas';
+import { useIsMobile } from '@/hooks/useViewportTier';
 import { DetailView } from './index';
+
+const DetailViewMobile = lazy(() => import('./mobile'));
 
 export default function Scene3DLayer() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const { markers } = useScene(canvasRef);
+  const isMobile = useIsMobile();
 
   return (
     <>
       <SceneCanvas ref={canvasRef} />
-      <DetailView markers={markers} />
+      {isMobile ? (
+        <Suspense fallback={null}>
+          <DetailViewMobile markers={markers} />
+        </Suspense>
+      ) : (
+        <DetailView markers={markers} />
+      )}
     </>
   );
 }

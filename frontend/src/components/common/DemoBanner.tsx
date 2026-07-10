@@ -46,7 +46,7 @@ export function DemoBanner() {
           animation: 'rkblink 1.2s infinite',
         }}
       />
-      DEMO · SIMULATED DATA — NOT REAL READINGS
+      DEMO
     </div>
   );
 }

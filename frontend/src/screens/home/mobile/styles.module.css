@@ -1,0 +1,422 @@
+/* ============================================================
+   Fleet (Home) screen — mobile layout.
+
+   Structure lives here; per-rack colours stay inline in the
+   components (they are data-driven), matching the desktop
+   screen's convention.
+
+   The screen is a fixed flex column: the top bar and search row
+   are flex:none, and ONE inner element owns the vertical scroll.
+   The app shell (.rk-app) is overflow:hidden, so nothing scrolls
+   unless a child asks to.
+
+   Geometry is from the mobile handoff (390×844 baseline) but
+   expressed fluidly, so it holds from 320px up to the 1023px
+   tablet ceiling.
+   ============================================================ */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f5f6f8;
+  padding-top: env(safe-area-inset-top);
+}
+
+/* ---------- Top bar ---------- */
+
+/* Stacking order on this screen, highest first:
+     .topbar    40  — owns the filter menu + alerts dropdown, so it must outrank
+                      .searchRow, which follows it in DOM order and would
+                      otherwise paint over the open menu at an equal z-index.
+     .searchRow 30
+     .backdrop  20  — dismiss layer: above the scrolling cards, below the chrome,
+                      so a tap on a card closes the menu instead of navigating,
+                      while the bar's own buttons stay live.
+     .scroll     –
+
+   `position: relative` is load-bearing, not decorative: .topbar is a FLEX ITEM,
+   and a flex item with a z-index creates a stacking context even when statically
+   positioned. That context is why the menu's own z-index is scoped to this bar. */
+.topbar {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 54px;
+  padding: 0 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e5ea;
+  z-index: 40;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.brandTile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #2563eb;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.brandWord {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #1a1f26;
+}
+
+/* Search + filter buttons. Active tinting is applied inline. */
+.iconBtn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid #e2e5ea;
+  background: #f4f6f8;
+  color: #4b5563;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.filterWrap {
+  position: relative;
+  flex: none;
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 11px;
+  border-radius: 9px;
+  border: 1px solid #e2e5ea;
+  background: #f4f6f8;
+  color: #1a1f26;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.caret {
+  font-size: 10px;
+  color: #6b7280;
+  transition: transform 0.2s;
+}
+.caretOpen {
+  transform: rotate(180deg);
+}
+
+/* Tap-anywhere-else layer that dismisses the filter menu. See the stacking
+   order documented on .topbar. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: 44px;
+  z-index: 40;
+  width: 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid #e2e5ea;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 14px 36px rgba(16, 24, 40, 0.2);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.menuLabel {
+  flex: 1;
+  text-align: left;
+}
+
+.menuCount {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: #9aa3af;
+}
+
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ---------- Search row ---------- */
+
+.searchRow {
+  position: relative;
+  flex: none;
+  padding: 10px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e5ea;
+  z-index: 30;
+}
+
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 40px;
+  padding: 0 13px;
+  border: 1px solid #e2e5ea;
+  border-radius: 11px;
+  background: #f4f6f8;
+}
+
+.searchGlyph {
+  font-size: 15px;
+  line-height: 1;
+  color: #9aa3af;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #1a1f26;
+  font-size: 14px;
+}
+.searchInput::placeholder {
+  color: #9aa3af;
+}
+
+.clearBtn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ---------- Scroll area ---------- */
+
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px calc(40px + env(safe-area-inset-bottom));
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #1a1f26;
+}
+
+.subtitle {
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+/* Stat cues — bleed to the screen edges so pills can scroll under the gutter. */
+.cues {
+  display: flex;
+  gap: 8px;
+  margin: 0 -16px 16px;
+  padding: 0 16px 4px;
+  overflow-x: auto;
+}
+.cues::-webkit-scrollbar {
+  display: none;
+}
+
+.cue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empty {
+  padding: 50px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* ---------- Server card ---------- */
+
+.card {
+  position: relative;
+  padding: 16px;
+  border: 1px solid #e2e5ea;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.card:active {
+  transform: scale(0.985);
+}
+
+/* Inset alert ring for warn/crit racks. Colour applied inline. */
+.cardRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cardName {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1f26;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.pillDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.cardMeta {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metrics {
+  display: flex;
+  gap: 24px;
+  margin: 15px 0 11px;
+}
+
+.metric {
+  flex: none;
+}
+
+.metricLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #9aa3af;
+}
+
+.metricValue {
+  margin-top: 2px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.sparkWrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #e2e5ea;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.footerHint {
+  color: #9aa3af;
+}

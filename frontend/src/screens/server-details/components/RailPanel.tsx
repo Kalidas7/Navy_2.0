@@ -10,22 +10,8 @@ import { colors } from '@/config/tokens';
 import { TimeRangeMenu, type TimeRange } from './TimeRangeMenu';
 import { HistoryPanel } from './HistoryPanel';
 import { HISTORY_GRAPHS } from './historyConfig';
-import { ScreenPanel } from '../panels/ScreenPanel';
-import { DrivesPanel } from '../panels/DrivesPanel';
-import { FanPanel } from '../panels/FanPanel';
-import { NetPanel } from '../panels/NetPanel';
-import { PowerPanel } from '../panels/PowerPanel';
-import { StatusPanel } from '../panels/StatusPanel';
-import type { CompKey } from '@/types';
-
-const PANELS: Record<CompKey, () => React.JSX.Element> = {
-  screen: ScreenPanel,
-  drives: DrivesPanel,
-  fan: FanPanel,
-  net: NetPanel,
-  power: PowerPanel,
-  status: StatusPanel,
-};
+import { NoTrendNotice } from './NoTrendNotice';
+import { PANELS } from '../panels/registry';
 
 export function RailPanel() {
   const { state, compStates, closeMenu } = useApp();
@@ -113,34 +99,7 @@ export function RailPanel() {
             the live scalar readouts (shown under Live) are unaffected. Menus with
             no plottable series show a short notice instead of empty space. */}
         <div style={{ flex: 1, overflowY: 'auto', padding: 14 }}>
-          {isLive ? (
-            <Panel />
-          ) : hasHistory ? (
-            <HistoryPanel comp={sel} range={range} />
-          ) : (
-            <div
-              style={{
-                height: '100%',
-                minHeight: 160,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                textAlign: 'center',
-                color: colors.textMuted,
-              }}
-            >
-              <span style={{ fontSize: 24, color: colors.textMuted2 }}>◷</span>
-              <div className="mlabel" style={{ fontSize: 12, fontWeight: 700, letterSpacing: '.06em', color: colors.textMid }}>
-                NO TREND FOR THIS VIEW
-              </div>
-              <div style={{ fontSize: 11.5, maxWidth: 240, lineHeight: 1.4 }}>
-                This panel shows a live snapshot with no single metric to chart.
-                Switch back to <strong>Live</strong> for current readings.
-              </div>
-            </div>
-          )}
+          {isLive ? <Panel /> : hasHistory ? <HistoryPanel comp={sel} range={range} /> : <NoTrendNotice />}
         </div>
       </div>
     </div>

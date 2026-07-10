@@ -22,6 +22,23 @@ export const SCENE = {
     near: 0.1,
     far: 100,
     position: [5.6, 4.2, 8.2] as [number, number, number],
+
+    /**
+     * Portrait framing (mobile only — see SceneController.fitWidth).
+     *
+     * `fov` is a VERTICAL angle, and the pose above is a wide landscape 3/4 shot.
+     * As the viewport narrows, the horizontal field collapses (at 390×844 it is
+     * ~22°, and the two-rack stage is sliced off at the screen edge) while
+     * `minDistance` forbids pinching out to recover it.
+     *
+     * So on narrow viewports we widen the VERTICAL fov to hold the horizontal
+     * extent roughly constant — a fit-width camera. `refAspect` is the aspect the
+     * pose was authored at; `maxFov` caps the widening, because a true fit at
+     * aspect 0.6 would demand ~95° and the perspective distortion would be worse
+     * than the clipping it fixed.
+     */
+    refAspect: 1.6,
+    maxFov: 65,
   },
 
   controls: {

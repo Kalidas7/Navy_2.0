@@ -56,7 +56,12 @@ export interface LiveMetrics {
   card: {
     cpu: number;
     ram: number;
-    temp: number;
+    /**
+     * CPU package temp in °C, or `null` when the host exposes no temperature
+     * sensor. NOT 0 — a missing sensor must render "—", never a fabricated
+     * reading, and a genuine 0°C must stay distinguishable from "no sensor".
+     */
+    temp: number | null;
     /** polyline points for the card's mini CPU sparkline */
     spark: string;
   } | null;
@@ -172,7 +177,8 @@ export function useSystemMetricsSource(): LiveMetrics {
     return {
       cpu: Math.round(raw.cpu.pct),
       ram: Math.round(raw.mem.pct),
-      temp: Math.round(raw.cpu.tempC ?? 0),
+      // `?? 0` here would have printed "0°" on a host with no thermal sensor.
+      temp: raw.cpu.tempC != null ? Math.round(raw.cpu.tempC) : null,
       // Match the home card's Sparkline geometry (viewBox 100×30, see RackCard).
       spark: spark(buf.current.cpu, 100, 30, 2),
     };
