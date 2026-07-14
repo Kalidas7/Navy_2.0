@@ -1,0 +1,370 @@
+/* ============================================================
+   3D Detail screen — mobile.
+
+   A fixed flex column laid over the persistent 3D canvas:
+
+     .topbar    54px            = --rk-scene-top (54px + safe-area)
+     .sceneLayer flex:1        ← exactly the canvas box
+     .dock      56px   ┐ together = --rk-scene-bottom (112px + safe-area)
+     .selector  56px   ┘
+
+   Because the canvas is inset by those same variables (see global.css and
+   SceneCanvas), `.sceneLayer` lines up 1:1 with it. That matters: hotspot
+   markers are projected against the CANVAS box, so a mismatch would offset
+   every marker by the height of the chrome.
+
+   Pointer events pass through `.sceneLayer` so the rack stays orbitable;
+   the chrome re-enables them on itself.
+   ============================================================ */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------- Header ---------- */
+
+/* z-index 40: owns the alerts dropdown, which must paint over the scene below
+   it. .topbar is a flex item, so its z-index creates a stacking context even
+   though it is statically positioned — hence `relative`, to make that explicit. */
+.topbar {
+  position: relative;
+  z-index: 40;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 54px;
+  padding: 0 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e5ea;
+  pointer-events: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.brandTile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #2563eb;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.crumb {
+  flex: none;
+  font-size: 13px;
+  color: #9aa3af;
+}
+
+.srvName {
+  min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1a1f26;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Scene slot ---------- */
+
+.sceneLayer {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  pointer-events: none;
+}
+
+/* Floating 3D controls (auto-rotate / ghost / step-back). The handoff's chip row
+   has no room for these, and they must not cover the rack — hence a compact
+   right-edge cluster, mirroring the desktop ControlToolbar's role. */
+.controls {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #e2e5ea;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(16, 24, 40, 0.08);
+  pointer-events: auto;
+}
+
+.ctrlBtn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4b5563;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: calc(100% - 32px);
+  padding: 8px 15px;
+  border: 1px solid #e2e5ea;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.08);
+  pointer-events: none;
+  animation: rkfade 0.4s ease;
+}
+
+.hintDot {
+  flex: none;
+  color: #2563eb;
+  font-size: 14px;
+  animation: rkblink 2s infinite;
+}
+
+.hintText {
+  font-size: 11px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Telemetry dock ---------- */
+
+.dock {
+  position: relative;
+  z-index: 20;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 56px;
+  padding: 0 16px;
+  background: #ffffff;
+  border-top: 1px solid #e2e5ea;
+  overflow-x: auto;
+  pointer-events: auto;
+}
+.dock::-webkit-scrollbar {
+  display: none;
+}
+
+.dockStat {
+  flex: none;
+}
+
+.dockLabel {
+  display: block;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #9aa3af;
+}
+
+.dockValue {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1f26;
+}
+
+.dockRule {
+  flex: none;
+  width: 1px;
+  height: 22px;
+  background: #e2e5ea;
+}
+
+.dockSpacer {
+  flex: 1;
+  min-width: 8px;
+}
+
+.dockLive {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.liveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.liveText {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+/* ---------- Component selector ---------- */
+
+.selector {
+  position: relative;
+  z-index: 20;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 56px;
+  padding: 0 12px;
+  background: #ffffff;
+  border-top: 1px solid #e2e5ea;
+  overflow-x: auto;
+  pointer-events: auto;
+}
+.selector::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 8px 13px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chipGlyph {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.chipRule {
+  flex: none;
+  width: 1px;
+  align-self: stretch;
+  margin: 12px 1px;
+  background: #e2e5ea;
+}
+
+/* ---------- Bottom sheet ----------
+   Opens over the scene, dock and chip row; the header (identity + alerts) stays
+   visible above it. Dismissing hides ONLY the card — the subsystem stays focused
+   in the 3D view, and everything behind the sheet is untouched. */
+
+.sheetBackdrop {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 54px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+  background: rgba(15, 20, 30, 0.34);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  pointer-events: auto;
+  animation: rkfadein 0.18s ease;
+}
+
+.sheet {
+  position: absolute;
+  /* header (54) + the handoff's 10px gap below it */
+  top: calc(env(safe-area-inset-top) + 64px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e2e5ea;
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  background: #ffffff;
+  box-shadow: 0 -12px 40px rgba(16, 24, 40, 0.22);
+  pointer-events: auto;
+  animation: rksheetup 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sheetHeader {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px 13px;
+  border-bottom: 1px solid #e2e5ea;
+}
+
+.sheetTitleWrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+}
+
+.sheetTitle {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #1a1f26;
+}
+
+.sheetClose {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #e2e5ea;
+  border-radius: 8px;
+  background: #f4f6f8;
+  color: #6b7280;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sheetBody {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 16px calc(24px + env(safe-area-inset-bottom));
+}

@@ -9,6 +9,11 @@
   --rk-base-bg: #f5f6f8;
   --rk-text-body: #1a1f26;
   --rk-accent: #2563eb;
+
+  /* Insets carving the 3D canvas out of the full viewport (see SceneCanvas).
+     0 on desktop: the canvas is full-bleed and the chrome floats over it. */
+  --rk-scene-top: 0px;
+  --rk-scene-bottom: 0px;
 }
 
 * {
@@ -34,6 +39,34 @@ body {
   position: fixed;
   inset: 0;
   overflow: hidden;
+}
+
+/* Mobile shell (phone + tablet). `inset:0` pins the app to the LAYOUT viewport,
+   which on iOS Safari does not shrink for the URL bar — the bottom of the app
+   ends up hidden behind browser chrome. Anchor to the top only and size with the
+   DYNAMIC viewport instead (`100vh` is the fallback where `dvh` is unsupported).
+   `overscroll-behavior` kills pull-to-refresh and rubber-banding on the shell;
+   the screens inside scroll normally.
+
+   Breakpoint must stay in sync with TABLET_MAX in src/config/breakpoints.ts —
+   media queries cannot read custom properties. */
+@media (max-width: 1023px) {
+  .rk-app {
+    bottom: auto;
+    height: 100vh;
+    height: 100dvh;
+    overscroll-behavior: none;
+  }
+
+  /* Mobile detail: reserve the header (top bar 54) and the bottom chrome
+     (telemetry dock 56 + component selector 56) so the rack centers in the
+     slot the user can actually see, not behind the dock. Harmless on the mobile
+     home screen, which mounts no canvas.
+     These MUST match the heights in screens/server-details/mobile/styles.module.css. */
+  :root {
+    --rk-scene-top: calc(env(safe-area-inset-top) + 54px);
+    --rk-scene-bottom: calc(env(safe-area-inset-bottom) + 112px);
+  }
 }
 
 .mono {
@@ -123,6 +156,35 @@ button {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+/* Mobile bottom sheet: slide up from the bottom edge, backdrop fades in. */
+@keyframes rksheetup {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes rkfadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* Green "LIVE" halo — the counterpart to rkpulse (red) / rkpulseW (amber). */
+@keyframes rklivepulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(22, 163, 74, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
   }
 }
 @keyframes rkpop {

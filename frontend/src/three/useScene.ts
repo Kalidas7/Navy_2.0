@@ -8,12 +8,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { SceneController, type MarkerPosition } from './SceneController';
 import { useApp } from '@/app/AppContext';
+import { useIsMobile } from '@/hooks/useViewportTier';
 import { modelForServer } from '@/data/fleet';
 
 export function useScene(hostRef: React.RefObject<HTMLDivElement | null>) {
   const { state, dispatch } = useApp();
   const controllerRef = useRef<SceneController | null>(null);
   const [markers, setMarkers] = useState<MarkerPosition[]>([]);
+
+  // Portrait fit-width framing. Read through a ref inside the creation effect so
+  // it is NOT a dependency: crossing the tablet/desktop breakpoint (or rotating)
+  // must not tear down the scene and re-download the GLB. The separate effect
+  // below pushes changes into the live controller instead.
+  const isMobile = useIsMobile();
+  const isMobileRef = useRef(isMobile);
+  isMobileRef.current = isMobile;
 
   const isDetail = state.route === 'detail';
   // Which 3D model the active rack renders. Live hosts share the same live feed
@@ -30,14 +39,20 @@ export function useScene(hostRef: React.RefObject<HTMLDivElement | null>) {
     if (!host) return;
 
     try {
-      controllerRef.current = new SceneController(host, state.autoRotate, model, {
-        onLoadProgress: (pct) => dispatch({ type: 'LOAD_PCT', pct }),
-        onLoaded: () => dispatch({ type: 'SCENE_LOADING', value: false }),
-        onError: (message) => dispatch({ type: 'SCENE_ERROR', error: message }),
-        onMarkers: setMarkers,
-        // datacenter Stage 1: clicking either rack collapses to the single rack.
-        onRackClick: () => dispatch({ type: 'COLLAPSE_RACK' }),
-      });
+      controllerRef.current = new SceneController(
+        host,
+        state.autoRotate,
+        model,
+        {
+          onLoadProgress: (pct) => dispatch({ type: 'LOAD_PCT', pct }),
+          onLoaded: () => dispatch({ type: 'SCENE_LOADING', value: false }),
+          onError: (message) => dispatch({ type: 'SCENE_ERROR', error: message }),
+          onMarkers: setMarkers,
+          // datacenter Stage 1: clicking either rack collapses to the single rack.
+          onRackClick: () => dispatch({ type: 'COLLAPSE_RACK' }),
+        },
+        isMobileRef.current,
+      );
     } catch (err) {
       dispatch({ type: 'SCENE_ERROR', error: String((err as Error)?.message ?? err) });
     }
@@ -48,6 +63,11 @@ export function useScene(hostRef: React.RefObject<HTMLDivElement | null>) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDetail, model.url]);
+
+  // Keep portrait fit-width framing in sync across rotation / breakpoint crosses.
+  useEffect(() => {
+    controllerRef.current?.setFitWidth(isMobile);
+  }, [isMobile]);
 
   // Keep auto-rotate in sync.
   useEffect(() => {

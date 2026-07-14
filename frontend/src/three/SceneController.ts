@@ -146,12 +146,52 @@ export class SceneController {
 
   private autoRotate: boolean;
 
-  constructor(host: HTMLElement, autoRotate: boolean, model: ModelConfig, cb: SceneCallbacks) {
+  /**
+   * Widen the vertical FOV on narrow (portrait) viewports so the horizontal
+   * extent stays roughly constant. Mobile only; `false` on desktop, where
+   * `fovFor()` always returns the authored `SCENE.camera.fov` unchanged.
+   */
+  private fitWidth: boolean;
+
+  constructor(
+    host: HTMLElement,
+    autoRotate: boolean,
+    model: ModelConfig,
+    cb: SceneCallbacks,
+    fitWidth = false,
+  ) {
     this.host = host;
     this.autoRotate = autoRotate;
     this.model = model;
     this.cb = cb;
+    this.fitWidth = fitWidth;
     this.init();
+  }
+
+  /**
+   * Vertical FOV for a given aspect. Solves `tan(v/2) * aspect = const` so the
+   * horizontal half-angle matches what `refAspect` would have shown, then clamps
+   * to `maxFov` to bound perspective distortion.
+   *
+   * Only the TWO-RACK stage needs the extra horizontal room — two racks side by
+   * side on ±x are what portrait slices off. Once collapsed to the single centred
+   * rack (and for the head-on component focus that follows), the authored 45°
+   * already frames correctly at phone aspects, and widening would merely shrink
+   * the subject. So the collapsed stage keeps desktop's exact framing.
+   */
+  private fovFor(aspect: number): number {
+    const base = SCENE.camera.fov;
+    if (!this.fitWidth || this.collapsed || !aspect || aspect >= SCENE.camera.refAspect) return base;
+    const halfBase = THREE.MathUtils.degToRad(base) / 2;
+    const needed = 2 * Math.atan((Math.tan(halfBase) * SCENE.camera.refAspect) / aspect);
+    return Math.min(THREE.MathUtils.radToDeg(needed), SCENE.camera.maxFov);
+  }
+
+  /** Toggle portrait fit-width framing (called when the viewport tier changes). */
+  setFitWidth(value: boolean): void {
+    if (this.fitWidth === value) return;
+    this.fitWidth = value;
+    this.onResize();
   }
 
   // ---------- setup ----------
@@ -180,7 +220,7 @@ export class SceneController {
     this.envRT = this.pmrem.fromScene(new RoomEnvironment(), SCENE.envIntensity);
     scene.environment = this.envRT.texture;
 
-    const camera = new THREE.PerspectiveCamera(SCENE.camera.fov, w / h, SCENE.camera.near, SCENE.camera.far);
+    const camera = new THREE.PerspectiveCamera(this.fovFor(w / h), w / h, SCENE.camera.near, SCENE.camera.far);
     camera.position.set(...SCENE.camera.position);
     this.camera = camera;
 
@@ -401,6 +441,8 @@ export class SceneController {
     if (!w || !h) return;
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
+    // No-op on desktop (fitWidth=false ⇒ always SCENE.camera.fov).
+    this.camera.fov = this.fovFor(w / h);
     this.camera.updateProjectionMatrix();
   }
 
@@ -731,6 +773,11 @@ export class SceneController {
    */
   setCollapsed(value: boolean): void {
     this.collapsed = value;
+    // Mobile only: the stage decides the FOV (see fovFor) — the two-rack stage
+    // widens to fit both racks, the single-rack stage keeps the authored 45°.
+    // Re-apply before the early-return below so the narrowing rides the collapse
+    // fly-in. Guarded so desktop never pays a redundant resize/reproject here.
+    if (this.fitWidth) this.onResize();
     // Collapsing WITH an armed slide (a rack was clicked): don't snap the layout —
     // the loop drives the main rack from its offset to center and fades the twin
     // out over the same clock as the camera fly-in. applyRackLayout would jump the

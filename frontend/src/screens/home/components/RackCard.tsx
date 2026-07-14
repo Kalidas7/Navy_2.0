@@ -35,7 +35,9 @@ export function RackCard({ server }: { server: FleetServerVM }) {
   // rack shows "—" (no live sensor feed) via the selector's pre-formatted text.
   const cpu = live ? `${live.cpu}%` : server.cpuText;
   const ram = live ? `${live.ram}%` : server.ramText;
-  const temp = live ? `${live.temp}°` : server.tempText;
+  // `live.temp` is null on a host with no thermal sensor → fall through to "—"
+  // rather than printing a fabricated 0°.
+  const temp = live && live.temp != null ? `${live.temp}°` : server.tempText;
   const sparkPts = live ? live.spark : server.spark;
   // Raw CPU buffer for the sparkline's hover (localhost only). Coords MUST use
   // the same geometry the card's spark string was built with (100×30, pad 2 —

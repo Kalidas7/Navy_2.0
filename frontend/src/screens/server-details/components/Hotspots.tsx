@@ -14,9 +14,21 @@ import type { CompKey } from '@/types';
 
 const COMP_BY_KEY = new Map(COMPS.map((c) => [c.key, c]));
 
-export function Hotspots({ markers }: { markers: MarkerPosition[] }) {
+export function Hotspots({
+  markers,
+  labels,
+}: {
+  markers: MarkerPosition[];
+  /**
+   * Override the theme's label setting. The mobile detail view passes `false`:
+   * left-side markers anchor from their right edge and grow leftward, so at
+   * 390px their labels run off the screen. The chip row already names every
+   * subsystem, so the bare dots lose nothing there.
+   */
+  labels?: boolean;
+}) {
   const { state, compStates, theme, selectComp } = useApp();
-  const showLabels = theme.hotspotLabels;
+  const showLabels = labels ?? theme.hotspotLabels;
   const sel = state.selectedComp;
 
   // When a component is selected, hide ALL hotspots so only that component's
